@@ -121,4 +121,6 @@ def notify_evaluation(evaluation_url, payload, retries=5):
     return False
 
 if __name__ == '__main__':
-    app.run(port=8080)
+    app.run(host='0.0.0.0', port=8080)
+
+
