@@ -1,10 +1,96 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>Task Brief – LLM App Deployment</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css">
+  <style>
+    body { background-color: #f6f8fa; margin: 0; font-family: 'Inter', Arial, sans-serif; }
+    .container { margin-top: 40px; max-width: 900px; }
+    .brief-header { font-size: 2.7rem; font-weight: 900; margin-bottom: .3em;}
+    .label { border-radius: 0.6em; font-size: 0.93em; }
+    .section-title { margin-top: 2rem; font-weight:600; font-size: 1.35rem;}
+    .attachment-img { max-width: 300px; max-height: 210px; border:1.5px solid #eee; margin: 0.6em;}
+    code { background: #eaf0f4; color: #095484; border-radius: .25em; padding: 1px 5px; }
+  </style>
+</head>
+<body>
+<div class="container shadow rounded bg-white p-4">
+  <div class="mb-3">
+    <span class="badge label bg-primary">Task: <span id="task"></span></span>
+    <span class="badge label bg-success">Round: <span id="round"></span></span>
+    <span class="badge label bg-info text-dark">Nonce: <span id="nonce"></span></span>
+    <span class="badge label bg-secondary">Email: <span id="email"></span></span>
+  </div>
+  <div class="brief-header">Task Brief</div>
+  <div class="mb-4" style="font-size:1.35rem;" id="brief"></div>
 
-    <!DOCTYPE html>
-    <html>
-    <head><title>Task App</title></head>
-    <body>
-      <h1>Task Brief</h1>
-      <p>Send large dummy attachment</p>
-    </body>
-    </html>
-    
+  <div id="attachments-section" style="display:none;">
+    <div class="section-title">Attachments</div>
+    <div id="attachments-list" class="d-flex flex-wrap"></div>
+  </div>
+
+  <div id="checks-section" style="display:none;">
+    <div class="section-title">Evaluation Checks</div>
+    <ul id="checks-list"></ul>
+  </div>
+
+  <div class="section-title mt-4">Meta</div>
+  <dl>
+    <dt>Evaluation URL</dt><dd id="eval-url"></dd>
+  </dl>
+</div>
+<script>
+  // Insert the actual JSON below (your pipeline should embed this)
+  const TASK = {
+    "task": "test-large-payload",
+    "round": 1,
+    "nonce": "testB-002",
+    "email": "tester@example.com",
+    "brief": "Send large dummy attachment",
+    "attachments": [
+      {"name": "big.bin", "url": "data:application/octet-stream;base64,AAAA"}
+    ],
+    "checks": ["Page loads", "Attachment present"],
+    "evaluation_url": "https://example.com/notify"
+  };
+
+  document.getElementById('task').textContent = TASK.task || '-';
+  document.getElementById('round').textContent = TASK.round ?? '-';
+  document.getElementById('nonce').textContent = TASK.nonce || '-';
+  document.getElementById('email').textContent = TASK.email || '-';
+  document.getElementById('brief').textContent = TASK.brief || '(No brief)';
+
+  // Attachments
+  if (TASK.attachments && TASK.attachments.length > 0) {
+    document.getElementById('attachments-section').style.display = '';
+    for (const a of TASK.attachments) {
+      let el;
+      if ((a.url+"").startsWith("data:image/")) {
+        el = document.createElement('img');
+        el.src = a.url;
+        el.alt = a.name;
+        el.className = "attachment-img";
+      } else {
+        el = document.createElement('div');
+        el.innerHTML = `<b>${a.name}</b> <code>[non-image]</code>`;
+        el.style.margin = "0.7em";
+      }
+      document.getElementById('attachments-list').appendChild(el);
+    }
+  }
+
+  // Checks
+  if (TASK.checks && TASK.checks.length > 0) {
+    document.getElementById('checks-section').style.display = '';
+    for (const check of TASK.checks) {
+      const li = document.createElement('li');
+      li.textContent = check;
+      document.getElementById('checks-list').appendChild(li);
+    }
+  }
+  document.getElementById('eval-url').textContent = TASK.evaluation_url || '-';
+</script>
+</body>
+</html>
