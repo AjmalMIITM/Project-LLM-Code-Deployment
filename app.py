@@ -3,6 +3,7 @@ from github import Github
 import os
 import requests
 import time
+from generate_html import generate_task_html, generate_task_readme
 
 app = Flask(__name__)
 
@@ -13,10 +14,12 @@ SECRET = os.environ.get('SECRET_KEY')
 GITHUB_TOKEN = os.environ.get('GITHUB_TOKEN')
 REPO_NAME = "AjmalMIITM/Project-LLM-Code-Deployment"
 
+# Set your unique usercode for evaluation response
+USERCODE = os.environ.get('USERCODE', 'ajmalmiitm')
+
 @app.route('/api-endpoint', methods=['POST'])
 def api_endpoint():
     data = request.get_json(force=True)
-
     if not data:
         return jsonify({"error": "No JSON body"}), 400
 
@@ -30,31 +33,22 @@ def api_endpoint():
         if field not in data:
             return jsonify({"error": f"Missing field {field}"}), 400
 
-    email = data["email"]
-    task = data["task"]
-    round_num = data["round"]
-    nonce = data["nonce"]
-    brief = data["brief"]
-    evaluation_url = data["evaluation_url"]
+    # Immediately return usercode per specification
+    resp = jsonify({"usercode": USERCODE})
+    resp.status_code = 200
 
-    # Generate minimal app content
-    html_content = f"""
-    <!DOCTYPE html>
-    <html>
-    <head><title>Task App</title></head>
-    <body>
-      <h1>Task Brief</h1>
-      <p>{brief}</p>
-    </body>
-    </html>
-    """
-
-    # Files to push to GitHub
-    files = {
-        "index.html": html_content,
-        "README.md": f"# {task}\n\nThis app does: {brief}",
-        # Simple MIT License placeholder text
-        "LICENSE": """MIT License
+    # Generate rich files using generate_html.py
+    output_dir = "./deploy_dir"
+    os.makedirs(output_dir, exist_ok=True)
+    generate_task_html(data, output_dir)
+    generate_task_readme(data, output_dir)
+    
+    # Prepare files for push from generated files
+    files = {}
+    for filename in ["index.html", "README.md", "LICENSE"]:
+        # LICENSE remains minimal, you can replace with your actual LICENSE file contents
+        if filename == "LICENSE":
+            files[filename] = """MIT License
 
 Copyright (c) 2025 Your Name
 
@@ -63,31 +57,32 @@ of this software and associated documentation files (the "Software"), to deal
 in the Software without restriction, including without limitation the rights
 to use, copy, modify, merge, publish, distribute, sublicense, and/or sell...
 """
-    }
+        else:
+            with open(os.path.join(output_dir, filename), "r") as f:
+                files[filename] = f.read()
 
     # Push files to GitHub
-    push_to_github(GITHUB_TOKEN, REPO_NAME, files, f"Build for task {task} round {round_num}")
+    push_to_github(GITHUB_TOKEN, REPO_NAME, files, f"Build for task {data['task']} round {data['round']}")
 
-    # Get latest commit SHA
+    # Get latest commit SHA for notification
     g = Github(GITHUB_TOKEN)
     commit_sha = g.get_repo(REPO_NAME).get_commits()[0].sha
 
     pages_url = f"https://{REPO_NAME.split('/')[0].lower()}.github.io/{REPO_NAME.split('/')[1]}/"
 
-    # Notify evaluation API
+    # Notify evaluation API asynchronously (optional enhancement)
     notify_payload = {
-        "email": email,
-        "task": task,
-        "round": round_num,
-        "nonce": nonce,
+        "email": data["email"],
+        "task": data["task"],
+        "round": data["round"],
+        "nonce": data["nonce"],
         "repo_url": f"https://github.com/{REPO_NAME}",
         "commit_sha": commit_sha,
         "pages_url": pages_url
     }
+    notify_evaluation(data["evaluation_url"], notify_payload)
 
-    notify_evaluation(evaluation_url, notify_payload)
-
-    return jsonify({"status": "OK"}), 200
+    return resp
 
 def push_to_github(token, repo_name, files_dict, commit_message):
     g = Github(token)
@@ -122,5 +117,3 @@ def notify_evaluation(evaluation_url, payload, retries=5):
 
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=8080)
-
-
