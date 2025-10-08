@@ -7,10 +7,10 @@ import time
 app = Flask(__name__)
 
 # Your secret key (verify incoming requests)
-SECRET = "a9fd43c6-a7fa-400e-9208-39f984876201"
+SECRET = os.environ.get('SECRET_KEY')
 
 # Your GitHub token and repo details
-GITHUB_TOKEN = "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"
+GITHUB_TOKEN = os.environ.get('GITHUB_TOKEN')
 REPO_NAME = "AjmalMIITM/Project-LLM-Code-Deployment"
 
 @app.route('/api-endpoint', methods=['POST'])
