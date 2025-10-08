@@ -92,5 +92,3 @@ task_json = {
     "checks": ["Page loads", "Attachment present"],
     "evaluation_url": "https://example.com/notify"
 }
-generate_task_html(task_json)
-generate_task_readme(task_json)
