@@ -1,3 +1,3 @@
-# test-small-png
+# test-large-payload
 
-This app does: Display attached 1×1 PNG
+This app does: Send large dummy attachment
