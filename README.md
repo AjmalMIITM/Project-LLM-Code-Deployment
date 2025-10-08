@@ -1,13 +1,14 @@
 
-# test-large-payload
+# file-check
 
 **Round:** 1
-**Brief:** Send large dummy attachment
+**Brief:** Submit a document file for processing.
 
-**Attachments:** big.bin
+**Attachments:** report.pdf
 
 **Checks:** 
-None
+- Attachment listed
+- Correct file type
 
 **Evaluation URL:** https://example.com/notify
 
