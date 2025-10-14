@@ -1,6 +1,5 @@
 # 🚀 LLM Code Deployment – Captcha Solver
 
-[![License](https://img.shields.io/github/license/AjmalMIITM/Project-LLM-Code-Deployment?style=for-the-badge&color=blueviolet)](LICENSE)
 [![Deploy Status](https://img.shields.io/badge/Deploy-Live%20on%20Render-success?style=for-the-badge&logo=render)](https://project-llm-code-deployment.onrender.com/api-endpoint)
 [![Made with Python](https://img.shields.io/badge/Made%20with-Python%203.9+-blue?style=for-the-badge&logo=python)](#)
 
