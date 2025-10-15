@@ -1,14 +1,13 @@
 
-# file-check
+# logging-test
 
 **Round:** 1
-**Brief:** Submit a document file for processing.
+**Brief:** Testing logging functionality
 
-**Attachments:** report.pdf
+**Attachments:** None
 
 **Checks:** 
-- Attachment listed
-- Correct file type
+None
 
 **Evaluation URL:** https://example.com/notify
 
