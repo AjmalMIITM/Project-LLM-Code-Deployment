@@ -1,6 +1,5 @@
-# 🚀 LLM Code Deployment – Captcha Solver
+# LLM Code Deployment 
 
-[![Deploy Status](https://img.shields.io/badge/Deploy-Live%20on%20Render-success?style=for-the-badge&logo=render)](https://project-llm-code-deployment.onrender.com/api-endpoint)
 [![Made with Python](https://img.shields.io/badge/Made%20with-Python%203.9+-blue?style=for-the-badge&logo=python)](#)
 
 ---
@@ -9,8 +8,7 @@
 
 This project is an **automated app builder and deployer** for LLM-assisted tasks within the IITM TDS program.  
 It dynamically creates and deploys single-page web apps (like captcha solvers) to **GitHub Pages**, fully orchestrated through a POST API.
-
-- 🌐 **API URL:** [`https://project-llm-code-deployment.onrender.com/api-endpoint`](https://project-llm-code-deployment.onrender.com/api-endpoint)  
+  
 - 💾 **Demo Repo:** [`AjmalMIITM/Project-LLM-Code-Deployment`](https://github.com/AjmalMIITM/Project-LLM-Code-Deployment)
 
 
