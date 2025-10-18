@@ -1,7 +1,7 @@
 import requests
 import os
 
-AIPIPE_TOKEN = os.environ.get("AIPIPE_TOKEN") 
+AIPIPE_TOKEN = os.environ.get("AIPIPE_TOKEN")
 AIPIPE_URL = "https://aipipe.org/openrouter/v1/chat/completions"
 MODEL = "qwen/qwen3-coder:free"  # change to other "free" models if needed
 
@@ -31,13 +31,10 @@ VERY IMPORTANT:
 - No explanation, only code.
 - Top-align all content, proper background, padding, rounded, and readable font sizing.
 """
-
-
     headers = {
         "Authorization": f"Bearer {AIPIPE_TOKEN}",
         "Content-Type": "application/json",
     }
-
     payload = {
         "model": MODEL,
         "messages": [
@@ -48,16 +45,24 @@ VERY IMPORTANT:
         "max_tokens": 1400
     }
 
-    resp = requests.post(AIPIPE_URL, headers=headers, json=payload, timeout=60)
-    result = resp.json()
-    # There may be model variations, but this pattern returns the code as text.
-    return result['choices'][0]['message']['content']
+    try:
+        resp = requests.post(AIPIPE_URL, headers=headers, json=payload, timeout=60)
+        result = resp.json()
+        if "choices" in result and len(result["choices"]) > 0:
+            return result['choices'][0]['message']['content']
+        elif "error" in result:
+            err = result["error"]
+            msg = err["message"] if isinstance(err, dict) and "message" in err else str(err)
+            return f"<h2 style='color:red;'>LLM API ERROR: {msg}</h2>"
+        else:
+            return f"<h2 style='color:red;'>Unexpected LLM API response:<br>{result}</h2>"
+    except Exception as e:
+        return f"<h2 style='color:red;'>Server exception: {e}</h2>"
 
-# In your generate_task_html:
 def generate_task_html(task_json, output_dir="."):
     code = get_code_from_llm(
-        task_json.get("brief"), 
-        task_json.get("checks"), 
+        task_json.get("brief"),
+        task_json.get("checks"),
         task_json.get("attachments", [])
     )
     with open(os.path.join(output_dir, "index.html"), "w", encoding="utf-8") as f:
