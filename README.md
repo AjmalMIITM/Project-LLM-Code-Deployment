@@ -6,10 +6,10 @@
 
 This repo is an **auto-generated single-page web app** for a specific LLM-assisted TDS Project 1 task.
 
-- **Current Task:** `weather-dashboard`
+- **Current Task:** `quiz-game`
 - **Round:** `1`
 - **App Brief:**  
-  > Create a weather dashboard showing current weather for any city. Include temperature, humidity, and weather condition display with icons. Use mock data or static weather info. Style it as a professional dashboard with cards and icons.
+  > Create a simple quiz game with 5 multiple-choice questions about programming. Show score at the end and include progress tracking. Style as an engaging quiz interface with progress bar and results screen.
 
 ---
 
@@ -25,16 +25,16 @@ This repo is an **auto-generated single-page web app** for a specific LLM-assist
 
 | Field         | Value                        |
 |---------------|-----------------------------|
-| Task          | `weather-dashboard`                    |
+| Task          | `quiz-game`                    |
 | Round         | `1`               |
 | Evaluation URL| `https://example.com/notify`          |
 | Attachments   | — |
 
 ### ✅ Auto-Evaluation Checks
 
-- [ ] document.getElementById('temperature').textContent includes current temp
-- [ ] document.querySelector('.weather-icon') exists
-- [ ] responsive layout on mobile
+- [ ] score displays correctly
+- [ ] progress bar updates
+- [ ] all questions display properly
 
 ---
 
