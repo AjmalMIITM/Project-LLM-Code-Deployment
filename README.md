@@ -1,19 +1,15 @@
 
-# SumOfSales
+# license-fix-test
 
 **Round:** 1
-**Brief:** Publish a single-page site whose title is `Sales Summary 960`.
-It should use fetch() to load sales.csv (provided in the attachments),
-dynamically sum the `sales` column where the `category` <= 10,
-and displays the total inside an id="total-sales" element, rounded to 2 decimals.
+**Brief:** Testing complete MIT license
 
-**Attachments:** sales.csv
+**Attachments:** None
 
 **Checks:** 
-- document.title === "Sales Summary 960"
-- Math.abs(+document.querySelector('#total-sales').textContent) - 684303.5099999999) < 0.01
+None
 
-**Evaluation URL:** https://tds-llm-code-deploy.sanand.workers.dev/evaluate
+**Evaluation URL:** https://example.com/notify
 
 ---
 
