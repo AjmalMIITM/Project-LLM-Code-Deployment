@@ -6,10 +6,10 @@
 
 This repo is an **auto-generated single-page web app** for a specific LLM-assisted TDS Project 1 task.
 
-- **Current Task:** `quiz-game`
+- **Current Task:** `currency-converter`
 - **Round:** `1`
 - **App Brief:**  
-  > Create a simple quiz game with 5 multiple-choice questions about programming. Show score at the end and include progress tracking. Style as an engaging quiz interface with progress bar and results screen.
+  > Create a currency converter app showing conversion rates for 5 major currencies. Include currency selection dropdowns and conversion button. Use mock exchange rates. Include currency icons or flags for visual appeal.
 
 ---
 
@@ -25,16 +25,17 @@ This repo is an **auto-generated single-page web app** for a specific LLM-assist
 
 | Field         | Value                        |
 |---------------|-----------------------------|
-| Task          | `quiz-game`                    |
+| Task          | `currency-converter`                    |
 | Round         | `1`               |
 | Evaluation URL| `https://example.com/notify`          |
 | Attachments   | — |
 
 ### ✅ Auto-Evaluation Checks
 
-- [ ] score displays correctly
-- [ ] progress bar updates
-- [ ] all questions display properly
+- [ ] currency dropdown works
+- [ ] conversion calculation accurate
+- [ ] result displays properly formatted
+- [ ] mobile responsive
 
 ---
 
