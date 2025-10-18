@@ -4,19 +4,19 @@
 
 ## 🚀 Project Overview
 
-This repo is an **auto-generated single-page web app** for a specific LLM-assisted TDS Project 1 task.
+This repo is an **auto-generated app or script** for a specific LLM-assisted TDS Project 1 task.
 
-- **Current Task:** `currency-converter`
+- **Current Task:** `sum-api`
 - **Round:** `1`
 - **App Brief:**  
-  > Create a currency converter app showing conversion rates for 5 major currencies. Include currency selection dropdowns and conversion button. Use mock exchange rates. Include currency icons or flags for visual appeal.
+  > Build a Flask API with a POST endpoint '/sum' that accepts two numbers in JSON and returns their sum.
 
 ---
 
 ## 📋 Features (This Task)
 
-- LLM-generated, ready-to-use web app for the current task brief
-- Deploys to [GitHub Pages](https://ajmalmiitm.github.io/Project-LLM-Code-Deployment/)
+- LLM-generated, ready-to-use code for the current task brief
+- Deploys to [GitHub Pages](https://ajmalmiitm.github.io/Project-LLM-Code-Deployment/) or as appropriate
 - Receives its brief/updates by secure API POST
 
 ---
@@ -25,17 +25,14 @@ This repo is an **auto-generated single-page web app** for a specific LLM-assist
 
 | Field         | Value                        |
 |---------------|-----------------------------|
-| Task          | `currency-converter`                    |
+| Task          | `sum-api`                    |
 | Round         | `1`               |
 | Evaluation URL| `https://example.com/notify`          |
 | Attachments   | — |
 
 ### ✅ Auto-Evaluation Checks
 
-- [ ] currency dropdown works
-- [ ] conversion calculation accurate
-- [ ] result displays properly formatted
-- [ ] mobile responsive
+- [ ] POST /sum returns correct sum
 
 ---
 
