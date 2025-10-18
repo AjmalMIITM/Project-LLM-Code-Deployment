@@ -9,10 +9,12 @@ from generate_html import generate_task_html, generate_task_readme
 
 # Set up logging (creates logs.txt on server only, not in GitHub)
 logging.basicConfig(
-    filename='logs.txt',
-    filemode='a',
+    level=logging.INFO,
     format='%(asctime)s %(levelname)s %(message)s',
-    level=logging.INFO
+    handlers=[
+        logging.FileHandler("logs.txt"),
+        logging.StreamHandler(sys.stdout)
+    ]
 )
 
 app = Flask(__name__)
@@ -114,7 +116,9 @@ SOFTWARE.
         
     except Exception as e:
         logging.error(f"Unexpected error in api_endpoint: {str(e)}")
+        print(f"Exception in /api-endpoint: {str(e)}", flush=True)
         return jsonify({"error": "Server error"}), 500
+
 
 def push_to_github(token, repo_name, files_dict, commit_message):
     try:
@@ -160,3 +164,4 @@ def notify_evaluation(evaluation_url, payload, retries=5):
 if __name__ == '__main__':
     logging.info("Starting Flask application")
     app.run(host='0.0.0.0', port=8080)
+
