@@ -1,20 +1,112 @@
-```python
-from flask import Flask, request, jsonify
+```html
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>To-Do List</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f4f4;
+            margin: 0;
+            padding: 20px;
+        }
+        h1 {
+            text-align: center;
+        }
+        #taskInput {
+            width: 80%;
+            padding: 10px;
+            margin-right: 10px;
+        }
+        #addTask {
+            padding: 10px;
+        }
+        ul {
+            list-style-type: none;
+            padding: 0;
+        }
+        li {
+            background: #fff;
+            margin: 5px 0;
+            padding: 10px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .completed {
+            text-decoration: line-through;
+            color: gray;
+        }
+        .delete {
+            background: red;
+            color: white;
+            border: none;
+            padding: 5px 10px;
+            cursor: pointer;
+        }
+    </style>
+</head>
+<body>
 
-app = Flask(__name__)
+    <h1>To-Do List</h1>
+    <input type="text" id="taskInput" placeholder="Add a new task...">
+    <button id="addTask">Add Task</button>
+    <ul id="taskList"></ul>
 
-@app.route('/sum', methods=['POST'])
-def sum_numbers():
-    data = request.get_json()
-    num1 = data.get('num1')
-    num2 = data.get('num2')
-    
-    if isinstance(num1, (int, float)) and isinstance(num2, (int, float)):
-        result = num1 + num2
-        return jsonify({'sum': result}), 200
-    else:
-        return jsonify({'error': 'Invalid input, please provide two numbers.'}), 400
+    <script>
+        const taskInput = document.getElementById('taskInput');
+        const addTaskButton = document.getElementById('addTask');
+        const taskList = document.getElementById('taskList');
 
-if __name__ == '__main__':
-    app.run(debug=True)
+        let tasks = JSON.parse(localStorage.getItem('tasks')) || [];
+
+        function renderTasks() {
+            taskList.innerHTML = '';
+            tasks.forEach((task, index) => {
+                const li = document.createElement('li');
+                li.textContent = task.text;
+                if (task.completed) {
+                    li.classList.add('completed');
+                }
+                const completeButton = document.createElement('button');
+                completeButton.textContent = task.completed ? 'Undo' : 'Complete';
+                completeButton.onclick = () => {
+                    task.completed = !task.completed;
+                    saveTasks();
+                    renderTasks();
+                };
+                const deleteButton = document.createElement('button');
+                deleteButton.textContent = 'Delete';
+                deleteButton.className = 'delete';
+                deleteButton.onclick = () => {
+                    tasks.splice(index, 1);
+                    saveTasks();
+                    renderTasks();
+                };
+                li.appendChild(completeButton);
+                li.appendChild(deleteButton);
+                taskList.appendChild(li);
+            });
+        }
+
+        function saveTasks() {
+            localStorage.setItem('tasks', JSON.stringify(tasks));
+        }
+
+        addTaskButton.onclick = () => {
+            if (taskInput.value.trim()) {
+                tasks.push({ text: taskInput.value.trim(), completed: false });
+                taskInput.value = '';
+                saveTasks();
+                renderTasks();
+            }
+        };
+
+        renderTasks();
+    </script>
+
+</body>
+</html>
 ```
