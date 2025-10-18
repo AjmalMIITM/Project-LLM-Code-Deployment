@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Programming Quiz Game</title>
+    <title>Currency Converter</title>
     <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&display=swap" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
     <style>
@@ -14,133 +14,57 @@
     </style>
 </head>
 <body class="bg-gray-100 flex items-center justify-center min-h-screen">
-    <div id="quiz-container" class="bg-white rounded-lg shadow-lg p-8 w-full max-w-lg">
-        <h1 class="text-2xl font-bold text-center mb-6">Programming Quiz</h1>
-        <div id="progress-bar" class="h-2 bg-blue-500 rounded mb-4" style="width: 0%;"></div>
-        <div id="question-container" class="mb-4">
-            <p id="question" class="text-lg font-semibold"></p>
-            <div id="answer-buttons" class="mt-4 space-y-2"></div>
+    <div class="bg-white shadow-lg rounded-lg p-8 w-full max-w-md">
+        <h1 class="text-2xl font-bold text-center mb-6">Currency Converter</h1>
+        <div class="mb-4">
+            <label for="fromCurrency" class="block text-sm font-medium text-gray-700">From:</label>
+            <select id="fromCurrency" class="mt-1 block w-full p-2 border border-gray-300 rounded-md focus:ring focus:ring-blue-500">
+                <option value="USD">USD - United States Dollar</option>
+                <option value="EUR">EUR - Euro</option>
+                <option value="GBP">GBP - British Pound</option>
+                <option value="JPY">JPY - Japanese Yen</option>
+                <option value="AUD">AUD - Australian Dollar</option>
+            </select>
         </div>
-        <button id="next-button" class="hidden bg-blue-500 text-white font-bold py-2 px-4 rounded hover:bg-blue-600">Next</button>
-        <div id="result-container" class="hidden text-center">
-            <h2 class="text-xl font-bold mb-4">Your Score: <span id="score"></span></h2>
-            <button id="restart-button" class="bg-green-500 text-white font-bold py-2 px-4 rounded hover:bg-green-600">Restart Quiz</button>
+        <div class="mb-4">
+            <label for="toCurrency" class="block text-sm font-medium text-gray-700">To:</label>
+            <select id="toCurrency" class="mt-1 block w-full p-2 border border-gray-300 rounded-md focus:ring focus:ring-blue-500">
+                <option value="USD">USD - United States Dollar</option>
+                <option value="EUR">EUR - Euro</option>
+                <option value="GBP">GBP - British Pound</option>
+                <option value="JPY">JPY - Japanese Yen</option>
+                <option value="AUD">AUD - Australian Dollar</option>
+            </select>
         </div>
+        <div class="mb-4">
+            <label for="amount" class="block text-sm font-medium text-gray-700">Amount:</label>
+            <input type="number" id="amount" class="mt-1 block w-full p-2 border border-gray-300 rounded-md focus:ring focus:ring-blue-500" placeholder="Enter amount" />
+        </div>
+        <button id="convertButton" class="w-full bg-blue-500 text-white font-bold py-2 rounded-md hover:bg-blue-600 transition duration-200">Convert</button>
+        <div id="result" class="mt-4 text-lg font-semibold text-center"></div>
     </div>
 
     <script>
-        const questions = [
-            {
-                question: "What does HTML stand for?",
-                answers: [
-                    { text: "Hyper Text Markup Language", correct: true },
-                    { text: "High Text Markup Language", correct: false },
-                    { text: "Hyper Tabular Markup Language", correct: false },
-                    { text: "None of the above", correct: false }
-                ]
-            },
-            {
-                question: "Which language is used for styling web pages?",
-                answers: [
-                    { text: "HTML", correct: false },
-                    { text: "CSS", correct: true },
-                    { text: "JavaScript", correct: false },
-                    { text: "PHP", correct: false }
-                ]
-            },
-            {
-                question: "Which is not a JavaScript framework?",
-                answers: [
-                    { text: "React", correct: false },
-                    { text: "Angular", correct: false },
-                    { text: "Django", correct: true },
-                    { text: "Vue", correct: false }
-                ]
-            },
-            {
-                question: "What does CSS stand for?",
-                answers: [
-                    { text: "Cascading Style Sheets", correct: true },
-                    { text: "Colorful Style Sheets", correct: false },
-                    { text: "Computer Style Sheets", correct: false },
-                    { text: "Creative Style Sheets", correct: false }
-                ]
-            },
-            {
-                question: "Which HTML element do we put the JavaScript?",
-                answers: [
-                    { text: "<script>", correct: true },
-                    { text: "<js>", correct: false },
-                    { text: "<javascript>", correct: false },
-                    { text: "<scripting>", correct: false }
-                ]
-            }
-        ];
+        const exchangeRates = {
+            USD: 1,
+            EUR: 0.85,
+            GBP: 0.75,
+            JPY: 110,
+            AUD: 1.35
+        };
 
-        let currentQuestionIndex = 0;
-        let score = 0;
+        document.getElementById('convertButton').addEventListener('click', function() {
+            const fromCurrency = document.getElementById('fromCurrency').value;
+            const toCurrency = document.getElementById('toCurrency').value;
+            const amount = parseFloat(document.getElementById('amount').value);
 
-        const questionElement = document.getElementById('question');
-        const answerButtonsElement = document.getElementById('answer-buttons');
-        const nextButton = document.getElementById('next-button');
-        const resultContainer = document.getElementById('result-container');
-        const scoreElement = document.getElementById('score');
-        const progressBar = document.getElementById('progress-bar');
-
-        function startGame() {
-            currentQuestionIndex = 0;
-            score = 0;
-            nextButton.classList.add('hidden');
-            resultContainer.classList.add('hidden');
-            showQuestion(questions[currentQuestionIndex]);
-            updateProgressBar();
-        }
-
-        function showQuestion(question) {
-            questionElement.innerText = question.question;
-            answerButtonsElement.innerHTML = '';
-            question.answers.forEach(answer => {
-                const button = document.createElement('button');
-                button.innerText = answer.text;
-                button.classList.add('bg-gray-200', 'hover:bg-gray-300', 'text-gray-800', 'font-semibold', 'py-2', 'px-4', 'rounded', 'w-full');
-                button.addEventListener('click', () => selectAnswer(answer));
-                answerButtonsElement.appendChild(button);
-            });
-        }
-
-        function selectAnswer(answer) {
-            if (answer.correct) {
-                score++;
-            }
-            currentQuestionIndex++;
-            updateProgressBar();
-            if (currentQuestionIndex < questions.length) {
-                showQuestion(questions[currentQuestionIndex]);
+            if (!isNaN(amount) && amount > 0) {
+                const convertedAmount = (amount * exchangeRates[toCurrency] / exchangeRates[fromCurrency]).toFixed(2);
+                document.getElementById('result').innerText = `${amount} ${fromCurrency} = ${convertedAmount} ${toCurrency}`;
             } else {
-                showResult();
+                document.getElementById('result').innerText = 'Please enter a valid amount.';
             }
-        }
-
-        function updateProgressBar() {
-            const progress = ((currentQuestionIndex + 1) / questions.length) * 100;
-            progressBar.style.width = progress + '%';
-        }
-
-        function showResult() {
-            questionElement.innerText = '';
-            answerButtonsElement.innerHTML = '';
-            nextButton.classList.add('hidden');
-            resultContainer.classList.remove('hidden');
-            scoreElement.innerText = `${score} out of ${questions.length}`;
-        }
-
-        document.getElementById('restart-button').addEventListener('click', startGame);
-        nextButton.addEventListener('click', () => {
-            currentQuestionIndex++;
-            showQuestion(questions[currentQuestionIndex]);
         });
-
-        startGame();
     </script>
 </body>
 </html>
