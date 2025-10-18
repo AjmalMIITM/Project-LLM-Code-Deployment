@@ -6,10 +6,10 @@
 
 This repo is an **auto-generated app or script** for a specific LLM-assisted TDS Project 1 task.
 
-- **Current Task:** `sum-api`
+- **Current Task:** `todo-app`
 - **Round:** `1`
 - **App Brief:**  
-  > Build a Flask API with a POST endpoint '/sum' that accepts two numbers in JSON and returns their sum.
+  > Create a responsive to-do list web app with add, complete, and delete features. Use localStorage to persist tasks.
 
 ---
 
@@ -25,14 +25,15 @@ This repo is an **auto-generated app or script** for a specific LLM-assisted TDS
 
 | Field         | Value                        |
 |---------------|-----------------------------|
-| Task          | `sum-api`                    |
+| Task          | `todo-app`                    |
 | Round         | `1`               |
 | Evaluation URL| `https://example.com/notify`          |
 | Attachments   | — |
 
 ### ✅ Auto-Evaluation Checks
 
-- [ ] POST /sum returns correct sum
+- [ ] add/delete/complete buttons work
+- [ ] tasks persist after reload
 
 ---
 
