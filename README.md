@@ -6,10 +6,10 @@
 
 This repo is an **auto-generated single-page web app** for a specific LLM-assisted TDS Project 1 task.
 
-- **Current Task:** `test-calculator`
+- **Current Task:** `weather-dashboard`
 - **Round:** `1`
 - **App Brief:**  
-  > Create a page with a button, two input boxes and a result div. When user clicks the button, the sum of values is displayed in the div with id result. Use only plain JS.
+  > Create a weather dashboard showing current weather for any city. Include temperature, humidity, and weather condition display with icons. Use mock data or static weather info. Style it as a professional dashboard with cards and icons.
 
 ---
 
@@ -25,14 +25,16 @@ This repo is an **auto-generated single-page web app** for a specific LLM-assist
 
 | Field         | Value                        |
 |---------------|-----------------------------|
-| Task          | `test-calculator`                    |
+| Task          | `weather-dashboard`                    |
 | Round         | `1`               |
 | Evaluation URL| `https://example.com/notify`          |
 | Attachments   | — |
 
 ### ✅ Auto-Evaluation Checks
 
-_No checks provided_
+- [ ] document.getElementById('temperature').textContent includes current temp
+- [ ] document.querySelector('.weather-icon') exists
+- [ ] responsive layout on mobile
 
 ---
 
