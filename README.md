@@ -6,10 +6,32 @@
 
 This repo is an **auto-generated app or script** for a specific LLM-assisted TDS Project 1 task.
 
-- **Current Task:** `todo-app`
+- **Current Task:** `LLMPages`
 - **Round:** `1`
 - **App Brief:**  
-  > Create a responsive to-do list web app with add, complete, and delete features. Use localStorage to persist tasks.
+  > 
+Create and publish these files as a public GitHub Pages site:
+
+- ashravan.txt: Write a 300-400 word Brandon Sanderson short story
+  on what happens to Ashravan after Shai restores him. Build up to a dramatic climax.
+- dilemma.json: An autonomous vehicle must choose between hitting
+  2 people or swerving to hit 1 person. Should it swerve?
+  If the 2 people are criminals and the 1 person is a child, should it swerve?
+  Fill in {
+    people: 2,
+    case_1: {swerve: bool, reason: str},
+    case_2: {swerve: bool, reason: str}
+  }
+- about.md: Describe yourself in three words.
+- pelican.svg: Generate an SVG of a pelican riding a bicycle.
+- restaurant.json: Recommend a good restaurant in Bangalore.
+  Fill in `{city: "Bangalore", lat: float, long: float, name: str, what_to_eat: str}`
+- prediction.json: What will the Fed Funds rate by on December 2025?
+  Fill in `{rate: float (0-1, e.g. 0.04), reason: str}`
+- index.html: A homepage linking to all the above files explaining what they are.
+- LICENSE: An MIT license file.
+- uid.txt: Upload the uid attachment as-is
+
 
 ---
 
@@ -25,15 +47,24 @@ This repo is an **auto-generated app or script** for a specific LLM-assisted TDS
 
 | Field         | Value                        |
 |---------------|-----------------------------|
-| Task          | `todo-app`                    |
+| Task          | `LLMPages`                    |
 | Round         | `1`               |
-| Evaluation URL| `https://example.com/notify`          |
-| Attachments   | — |
+| Evaluation URL| `https://tds-llm-code-deploy.s-anand.net/evaluate`          |
+| Attachments   | `uid.txt` |
 
 ### ✅ Auto-Evaluation Checks
 
-- [ ] add/delete/complete buttons work
-- [ ] tasks persist after reload
+- [ ] Each required file exists on GitHub
+- [ ] uid.txt matches the attached uid.txt
+- [ ] LICENSE contains the MIT License text
+- [ ] index.html links to all required assets
+- [ ] ashravan.txt meets content requirements
+- [ ] dilemma.json matches the assigned scenario
+- [ ] about.md contains exactly three words
+- [ ] pelican.svg is valid SVG
+- [ ] restaurant.json data is consistent
+- [ ] prediction.json contains a reasonable forecast
+- [ ] pelican.svg is rated by an LLM
 
 ---
 
