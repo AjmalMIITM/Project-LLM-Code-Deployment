@@ -1,112 +1,113 @@
-```html
+```plaintext
+ashravan.txt
+```
+In the dim light of the chamber, Ashravan stirred, his senses awakening to the world anew. Shai had restored him, pulling him from the brink of oblivion, and now he felt the weight of existence pressing upon him. Memories flooded back—fragments of a life once lived, of a kingdom lost, and of a power that had both saved and damned him.
+
+As he rose, Ashravan's mind raced. He remembered the moment of his downfall, the betrayal that had led to his demise. The echoes of laughter and the clashing of swords haunted him. But now, with Shai's magic coursing through him, he felt a surge of purpose. He was not just a puppet of fate; he was Ashravan, the once-mighty ruler of a realm that had crumbled under the weight of ambition.
+
+Determined to reclaim his throne, Ashravan sought out Shai, who had become both his savior and his enigma. "What now?" he asked, his voice a low rumble. Shai looked at him, her eyes reflecting a mixture of admiration and caution. "You must choose your path wisely. Power can corrupt, and vengeance can consume."
+
+Together, they ventured into the heart of the kingdom, where shadows of the past loomed large. The streets were filled with whispers of Ashravan's return, but also of the chaos that had followed his fall. As they approached the castle, a figure emerged from the shadows—his former advisor, now a power-hungry warlord.
+
+"Ashravan! You return to a kingdom in ruins," the warlord sneered, brandishing a sword. "You think you can reclaim what was lost? You are nothing now!"
+
+In that moment, Ashravan felt the weight of his choices. He could fight, reclaim his power through force, or he could seek a different path—one of redemption and unity. The warlord lunged, and Ashravan's instincts kicked in. He dodged, feeling the rush of adrenaline, but instead of striking back, he called out, "Stop! This cycle of violence must end!"
+
+The warlord hesitated, confusion flickering in his eyes. Shai stepped forward, her presence radiating calm. "We can rebuild together. The kingdom needs a leader who understands the cost of power."
+
+In that tense moment, Ashravan realized that true strength lay not in domination but in the ability to inspire change. With a deep breath, he lowered his hands, choosing peace over conflict. The warlord, taken aback, slowly lowered his weapon as well.
+
+As the sun set behind the castle, Ashravan felt a new dawn rising within him. He had been restored, not just in body but in spirit. The path ahead was uncertain, but with Shai by his side, he was ready to face whatever challenges awaited, united in purpose and hope.
+
+```plaintext
+dilemma.json
+```
+{
+  "people": 2,
+  "case_1": {
+    "swerve": true,
+    "reason": "The autonomous vehicle prioritizes the life of the child over the two criminals."
+  },
+  "case_2": {
+    "swerve": false,
+    "reason": "The vehicle chooses to minimize harm by hitting the criminals, who pose a greater threat to society."
+  }
+}
+
+```plaintext
+about.md
+```
+Three words: Creative, Analytical, Passionate
+
+```plaintext
+pelican.svg
+```
+<svg xmlns="http://www.w3.org/2000/svg" width="200" height="200" viewBox="0 0 200 200">
+  <g>
+    <circle cx="100" cy="100" r="100" fill="#87CEEB" />
+    <path d="M70 130 Q90 110 110 130 T150 130" fill="none" stroke="#000" stroke-width="2" />
+    <path d="M90 80 Q100 60 110 80" fill="#FFF" />
+    <path d="M100 80 Q95 70 90 80" fill="#FFD700" />
+    <path d="M100 80 Q105 70 110 80" fill="#FFD700" />
+    <rect x="80" y="130" width="40" height="10" fill="#8B4513" />
+    <path d="M60 130 L80 140 L60 150 Z" fill="#FFF" />
+    <path d="M140 130 L120 140 L140 150 Z" fill="#FFF" />
+  </g>
+</svg>
+
+```plaintext
+restaurant.json
+```
+{
+  "city": "Bangalore",
+  "lat": 12.9716,
+  "long": 77.5946,
+  "name": "MTR (Mavalli Tiffin Rooms)",
+  "what_to_eat": "Rawa Idli and Filter Coffee"
+}
+
+```plaintext
+prediction.json
+```
+{
+  "rate": 0.045,
+  "reason": "Economic indicators suggest a gradual increase in rates due to inflationary pressures and a recovering economy."
+}
+
+```plaintext
+index.html
+```
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>To-Do List</title>
-    <style>
-        body {
-            font-family: Arial, sans-serif;
-            background-color: #f4f4f4;
-            margin: 0;
-            padding: 20px;
-        }
-        h1 {
-            text-align: center;
-        }
-        #taskInput {
-            width: 80%;
-            padding: 10px;
-            margin-right: 10px;
-        }
-        #addTask {
-            padding: 10px;
-        }
-        ul {
-            list-style-type: none;
-            padding: 0;
-        }
-        li {
-            background: #fff;
-            margin: 5px 0;
-            padding: 10px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-        .completed {
-            text-decoration: line-through;
-            color: gray;
-        }
-        .delete {
-            background: red;
-            color: white;
-            border: none;
-            padding: 5px 10px;
-            cursor: pointer;
-        }
-    </style>
+    <title>Project Files</title>
 </head>
 <body>
-
-    <h1>To-Do List</h1>
-    <input type="text" id="taskInput" placeholder="Add a new task...">
-    <button id="addTask">Add Task</button>
-    <ul id="taskList"></ul>
-
-    <script>
-        const taskInput = document.getElementById('taskInput');
-        const addTaskButton = document.getElementById('addTask');
-        const taskList = document.getElementById('taskList');
-
-        let tasks = JSON.parse(localStorage.getItem('tasks')) || [];
-
-        function renderTasks() {
-            taskList.innerHTML = '';
-            tasks.forEach((task, index) => {
-                const li = document.createElement('li');
-                li.textContent = task.text;
-                if (task.completed) {
-                    li.classList.add('completed');
-                }
-                const completeButton = document.createElement('button');
-                completeButton.textContent = task.completed ? 'Undo' : 'Complete';
-                completeButton.onclick = () => {
-                    task.completed = !task.completed;
-                    saveTasks();
-                    renderTasks();
-                };
-                const deleteButton = document.createElement('button');
-                deleteButton.textContent = 'Delete';
-                deleteButton.className = 'delete';
-                deleteButton.onclick = () => {
-                    tasks.splice(index, 1);
-                    saveTasks();
-                    renderTasks();
-                };
-                li.appendChild(completeButton);
-                li.appendChild(deleteButton);
-                taskList.appendChild(li);
-            });
-        }
-
-        function saveTasks() {
-            localStorage.setItem('tasks', JSON.stringify(tasks));
-        }
-
-        addTaskButton.onclick = () => {
-            if (taskInput.value.trim()) {
-                tasks.push({ text: taskInput.value.trim(), completed: false });
-                taskInput.value = '';
-                saveTasks();
-                renderTasks();
-            }
-        };
-
-        renderTasks();
-    </script>
-
+    <h1>Welcome to My Project</h1>
+    <ul>
+        <li><a href="ashravan.txt">Ashravan Story</a></li>
+        <li><a href="dilemma.json">Dilemma Scenario</a></li>
+        <li><a href="about.md">About Me</a></li>
+        <li><a href="pelican.svg">Pelican SVG</a></li>
+        <li><a href="restaurant.json">Restaurant Recommendation</a></li>
+        <li><a href="prediction.json">Fed Funds Rate Prediction</a></li>
+    </ul>
 </body>
 </html>
+
+```plaintext
+LICENSE
 ```
+MIT License
+
+Copyright (c) [year] [fullname]
+
+Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation files (the "Software"), to deal in the Software without restriction, including without limitation the rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and to permit persons to whom the Software is furnished to do so, subject to the following conditions:
+
+...
+
+```plaintext
+uid.txt
+``
