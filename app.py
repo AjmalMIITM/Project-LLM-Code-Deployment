@@ -6,7 +6,9 @@ import requests
 import time
 import shutil
 import logging
-from generate_html import generate_task_files
+from generate_html import generate_task_files, generate_task_readme
+import pandas as pd
+from io import BytesIO
 
 logging.basicConfig(
     level=logging.INFO,
@@ -16,9 +18,7 @@ logging.basicConfig(
         logging.StreamHandler(sys.stdout)
     ]
 )
-
 app = Flask(__name__)
-
 SECRET = os.environ.get('SECRET_KEY')
 GITHUB_TOKEN = os.environ.get('GITHUB_TOKEN')
 REPO_NAME = "AjmalMIITM/Project-LLM-Code-Deployment"
@@ -33,56 +33,71 @@ def api_endpoint():
     try:
         data = request.get_json(force=True)
         logging.info(f"Received POST request: {data}")
-        
+       
         if not data:
             logging.error("No JSON body received")
             return jsonify({"error": "No JSON body"}), 400
-
         # Verify secret
         if data.get("secret") != SECRET:
             logging.error("Unauthorized access attempt")
             return jsonify({"error": "Unauthorized"}), 403
-
         required_fields = ["email", "task", "round", "nonce", "brief", "evaluation_url"]
         for field in required_fields:
             if field not in data:
                 logging.error(f"Missing field: {field}")
                 return jsonify({"error": f"Missing field {field}"}), 400
-
         resp = jsonify({"usercode": USERCODE})
         resp.status_code = 200
-
         output_dir = "./deploy_dir"
         os.makedirs(output_dir, exist_ok=True)
-
         logging.info(f"Generating task files for: {data['task']}")
+        
+        # Pre-process attachments: Download and convert if needed (e.g., xlsx to csv for Analyze task)
+        attachments = data.get("attachments", [])
+        processed_atts = []
+        for att in attachments:
+            att_path = os.path.join(output_dir, att['name'])
+            try:
+                if att['url'].startswith('data:'):
+                    # Decode base64 data URI
+                    header, encoded = att['url'].split(',', 1)
+                    content = base64.b64decode(encoded)
+                else:
+                    att_resp = requests.get(att['url'], timeout=30)
+                    att_resp.raise_for_status()
+                    content = att_resp.content
+                with open(att_path, 'wb') as fp:
+                    fp.write(content)
+                
+                # Special handling: Convert xlsx to csv if present (for Analyze task)
+                if att['name'].endswith('.xlsx'):
+                    xlsx_path = att_path
+                    csv_path = att_path.replace('.xlsx', '.csv')
+                    df = pd.read_excel(xlsx_path)
+                    df.to_csv(csv_path, index=False)
+                    # Add csv as additional attachment for LLM
+                    processed_atts.append({'name': os.path.basename(csv_path), 'path': csv_path})
+                    logging.info(f"Converted {att['name']} to {os.path.basename(csv_path)}")
+                processed_atts.append({'name': att['name'], 'path': att_path})
+            except Exception as e:
+                logging.error(f"Failed to process attachment {att['name']}: {e}")
+        
         generate_task_files(data, output_dir)
-
-        # Validate ONLY index.html (most critical file from LLM)
-        index_path = os.path.join(output_dir, "index.html")
-        if not os.path.isfile(index_path) or os.path.getsize(index_path) == 0:
-            logging.error("Generated file index.html missing or empty")
-            return jsonify({"error": "File index.html missing or empty"}), 500
+        generate_task_readme(data, output_dir)
         
-        # Copy index.html to project root
-        shutil.copyfile(index_path, "index.html")
-        
-        # Write MIT License
-        with open("LICENSE", "w") as f:
+        # Write MIT License to output_dir
+        license_path = os.path.join(output_dir, "LICENSE")
+        with open(license_path, "w") as f:
             f.write("""MIT License
-
 Copyright (c) 2025 AjmalMIITM
-
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
 in the Software without restriction, including without limitation the rights
 to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
 copies of the Software, and to permit persons to whom the Software is
 furnished to do so, subject to the following conditions:
-
 The above copyright notice and this permission notice shall be included in all
 copies or substantial portions of the Software.
-
 THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
 IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
 FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
@@ -91,25 +106,43 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 """)
-
-        # Read files for GitHub push (only index.html and LICENSE)
+        
+        # Validate index.html (fallback for most tasks)
+        index_path = os.path.join(output_dir, "index.html")
+        if not os.path.isfile(index_path) or os.path.getsize(index_path) == 0:
+            logging.error("Generated file index.html missing or empty")
+            # Log parsed files for debug
+            import generate_html
+            # Assuming we can peek into generate_html's last call, but for now, skip detailed
+            return jsonify({"error": "File index.html missing or empty"}), 500
+        
+        # Read all files from output_dir for GitHub push
         files = {}
-        with open("index.html", "r", encoding="utf-8") as f:
-            files["index.html"] = f.read()
-        with open("LICENSE", "r", encoding="utf-8") as f:
-            files["LICENSE"] = f.read()
-
+        for root, dirs, fs in os.walk(output_dir):
+            for f in fs:
+                path = os.path.join(root, f)
+                rel_path = os.path.relpath(path, output_dir)
+                try:
+                    if f.endswith(('.svg', '.txt', '.json', '.md', '.html', '.py', '.yml', '.csv', 'LICENSE')):
+                        # Text files
+                        with open(path, "r", encoding="utf-8") as ff:
+                            files[rel_path] = ff.read()
+                    else:
+                        # Binary, but for now, assume all text-ish
+                        with open(path, "rb") as ff:
+                            files[rel_path] = ff.read().decode('utf-8', errors='ignore')
+                except Exception as e:
+                    logging.error(f"Failed to read {path}: {e}")
+        
         logging.info(f"Pushing files to GitHub: {list(files.keys())}")
         push_to_github(GITHUB_TOKEN, REPO_NAME, files, f"Build for task {data['task']} round {data['round']}")
-
+        
         # Notify evaluation API with retries
-        from github import GithubException
         try:
             g = Github(GITHUB_TOKEN)
             repo = g.get_repo(REPO_NAME)
             commit_sha = repo.get_commits()[0].sha
             pages_url = f"https://{REPO_NAME.split('/')[0].lower()}.github.io/{REPO_NAME.split('/')[1]}/"
-
             notify_payload = {
                 "email": data["email"],
                 "task": data["task"],
@@ -121,17 +154,15 @@ SOFTWARE.
             }
             logging.info(f"Sending notification to: {data['evaluation_url']}")
             notify_evaluation(data["evaluation_url"], notify_payload)
-        except GithubException as ge:
-            logging.error(f"GitHub Exception: {ge}")
-
+        except Exception as ge:
+            logging.error(f"GitHub/Notify Exception: {ge}")
         logging.info(f"Successfully processed request for task: {data['task']}")
         return resp
-        
+       
     except Exception as e:
         logging.error(f"Unexpected error in api_endpoint: {str(e)}")
         print(f"Exception in /api-endpoint: {str(e)}", flush=True)
         return jsonify({"error": "Server error"}), 500
-
 
 def push_to_github(token, repo_name, files_dict, commit_message):
     try:
@@ -155,7 +186,7 @@ def notify_evaluation(evaluation_url, payload, retries=5):
     delay = 1
     for attempt in range(retries):
         try:
-            r = requests.post(evaluation_url, json=payload, headers=headers)
+            r = requests.post(evaluation_url, json=payload, headers=headers, timeout=30)
             if r.status_code == 200:
                 logging.info("Notification successful")
                 print("Notification successful")
@@ -173,7 +204,6 @@ def notify_evaluation(evaluation_url, payload, retries=5):
     logging.error("Failed to notify evaluation API after retries")
     print("Failed to notify evaluation API after retries")
     return False
-
 
 if __name__ == '__main__':
     logging.info("Starting Flask application")
