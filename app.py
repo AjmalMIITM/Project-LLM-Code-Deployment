@@ -6,7 +6,7 @@ import requests
 import time
 import shutil
 import logging
-from generate_html import generate_task_files, generate_task_readme
+from generate_html import generate_task_files
 
 logging.basicConfig(
     level=logging.INFO,
@@ -57,10 +57,6 @@ def api_endpoint():
 
         logging.info(f"Generating task files for: {data['task']}")
         generate_task_files(data, output_dir)
-        
-        # Always generate README.md regardless of LLM output
-        logging.info("Generating README.md")
-        generate_task_readme(data, output_dir)
 
         # Validate ONLY index.html (most critical file from LLM)
         index_path = os.path.join(output_dir, "index.html")
@@ -68,11 +64,8 @@ def api_endpoint():
             logging.error("Generated file index.html missing or empty")
             return jsonify({"error": "File index.html missing or empty"}), 500
         
-        # Copy generated files to project root
-        for filename in ["index.html", "README.md"]:
-            src = os.path.join(output_dir, filename)
-            if os.path.isfile(src):
-                shutil.copyfile(src, filename)
+        # Copy index.html to project root
+        shutil.copyfile(index_path, "index.html")
         
         # Write MIT License
         with open("LICENSE", "w") as f:
@@ -99,11 +92,12 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 """)
 
-        # Read files for GitHub push
+        # Read files for GitHub push (only index.html and LICENSE)
         files = {}
-        for filename in ["index.html", "README.md", "LICENSE"]:
-            with open(filename, "r", encoding="utf-8") as f:
-                files[filename] = f.read()
+        with open("index.html", "r", encoding="utf-8") as f:
+            files["index.html"] = f.read()
+        with open("LICENSE", "r", encoding="utf-8") as f:
+            files["LICENSE"] = f.read()
 
         logging.info(f"Pushing files to GitHub: {list(files.keys())}")
         push_to_github(GITHUB_TOKEN, REPO_NAME, files, f"Build for task {data['task']} round {data['round']}")
