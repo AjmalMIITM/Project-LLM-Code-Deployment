@@ -1,11 +1,14 @@
 import requests
 import os
+import re
 
 AIPIPE_TOKEN = os.environ.get("AIPIPE_TOKEN")
 AIPIPE_URL = "https://aipipe.org/openrouter/v1/chat/completions"
 MODEL = "openai/gpt-4o-mini"  # or any strong model you have quota for
 
+
 def get_code_from_llm(brief, checks, attachments):
+    attachment_list = ", ".join(att['name'] for att in attachments) if attachments else "none"
     prompt = f"""
 You are an expert software engineer and code generator.
 
@@ -13,21 +16,23 @@ TASK:
 {brief}
 
 REQUIREMENTS:
-- Analyze the brief and determine the correct programming language, framework, and file type needed.
-- If the task is a web app, generate a complete HTML/JS/CSS file.
-- If the task is a script, generate a complete Python, Bash, or other script as needed.
-- If the task is an API, generate a complete Flask/FastAPI app.
-- If the task is a config, generate a valid Dockerfile, YAML, or JSON as required.
-- If the task is a document, generate Markdown or HTML as needed.
-- If there are attachments, reference them in the code as required.
+- Analyze the brief and determine all required files (names and types).
+- Generate ALL required files exactly.
+- Use the attachments: {attachment_list} as referenced or needed.
 - Pass all checks listed below.
 
 CHECKS:
 {chr(10).join(f'- {check}' for check in checks)}
 
-OUTPUT:
-- Output only the complete code for the required file(s), with no explanation or extra text.
-- Use the correct file extension and structure for the task.
+OUTPUT FORMAT:
+For each file, output it in this format:
+
+--- filename.ext ---
+[file content]
+
+--- end ---
+
+Output only files in this exact format, no explanations.
 """
     headers = {
         "Authorization": f"Bearer {AIPIPE_TOKEN}",
@@ -40,11 +45,11 @@ OUTPUT:
             {"role": "user", "content": prompt}
         ],
         "temperature": 0.2,
-        "max_tokens": 1400
+        "max_tokens": 2000
     }
 
     try:
-        resp = requests.post(AIPIPE_URL, headers=headers, json=payload, timeout=60)
+        resp = requests.post(AIPIPE_URL, headers=headers, json=payload, timeout=90)
         result = resp.json()
         if "choices" in result and len(result["choices"]) > 0:
             return result['choices'][0]['message']['content']
@@ -57,28 +62,56 @@ OUTPUT:
     except Exception as e:
         return f"<h2 style='color:red;'>Server exception: {e}</h2>"
 
-def generate_task_html(task_json, output_dir="."):
-    code = get_code_from_llm(
+
+def parse_llm_output(output):
+    """
+    Parse output to extract files using:
+    --- filename.ext ---
+    [file contents]
+    --- end ---
+    """
+    pattern = r"--- ([^\n]+?) ---\n([\s\S]+?)(?=(?:--- [^\n]+? ---)|$)"
+    files = {}
+    for match in re.finditer(pattern, output):
+        filename = match.group(1).strip()
+        content = match.group(2).strip()
+        files[filename] = content
+    return files
+
+
+def generate_task_files(task_json, output_dir="."):
+    llm_output = get_code_from_llm(
         task_json.get("brief"),
         task_json.get("checks"),
         task_json.get("attachments", [])
     )
-    # Try to guess file type from code (simple heuristic)
-    if code.strip().startswith("<!DOCTYPE html>") or "<html" in code:
-        filename = "index.html"
-    elif code.strip().startswith("FROM "):
-        filename = "Dockerfile"
-    elif code.strip().startswith("import") or code.strip().startswith("def") or "python" in task_json.get("brief", "").lower():
-        filename = "app.py"
-    elif code.strip().startswith("{") or code.strip().startswith("["):
-        filename = "config.json"
-    elif code.strip().startswith("#") or code.strip().startswith("---"):
-        filename = "README.md"
-    else:
-        filename = "index.html"  # fallback
 
-    with open(os.path.join(output_dir, filename), "w", encoding="utf-8") as f:
-        f.write(code)
+    if llm_output.startswith("<h2"):
+        # Error from LLM API
+        print("LLM API Error:", llm_output)
+        return
+
+    files_map = parse_llm_output(llm_output)
+
+    # Save all files
+    for filename, content in files_map.items():
+        file_path = os.path.join(output_dir, filename)
+        # Create any required directories
+        os.makedirs(os.path.dirname(file_path), exist_ok=True)
+        with open(file_path, "w", encoding="utf-8") as f:
+            f.write(content)
+
+    # Save attachments as is
+    for att in task_json.get("attachments", []):
+        att_path = os.path.join(output_dir, att['name'])
+        try:
+            att_resp = requests.get(att['url'], timeout=30)
+            att_resp.raise_for_status()
+            with open(att_path, 'wb') as fp:
+                fp.write(att_resp.content)
+        except Exception as e:
+            print(f"Failed to download attachment {att['name']}: {e}")
+
 
 def generate_task_readme(task_json, output_dir="."):
     task = task_json.get('task', 'Task')
@@ -92,7 +125,7 @@ def generate_task_readme(task_json, output_dir="."):
 
 [![Deploy Status](https://img.shields.io/badge/deploy-on--render-brightgreen)](https://project-llm-code-deployment.onrender.com/api-endpoint)
 
-## 🚀 Project Overview
+## Project Overview
 
 This repo is an **auto-generated app or script** for a specific LLM-assisted TDS Project 1 task.
 
