@@ -6,7 +6,7 @@ import requests
 import time
 import shutil
 import logging
-from generate_html import generate_task_files
+from generate_html import generate_task_files, generate_task_readme
 
 logging.basicConfig(
     level=logging.INFO,
@@ -57,17 +57,22 @@ def api_endpoint():
 
         logging.info(f"Generating task files for: {data['task']}")
         generate_task_files(data, output_dir)
+        
+        # Always generate README.md regardless of LLM output
+        logging.info("Generating README.md")
+        generate_task_readme(data, output_dir)
 
-        # Validate generated files exist and non-empty
-        for filename in ["index.html", "README.md"]:
-            file_path = os.path.join(output_dir, filename)
-            if not os.path.isfile(file_path) or os.path.getsize(file_path) == 0:
-                logging.error(f"Generated file {filename} missing or empty")
-                return jsonify({"error": f"File {filename} missing or empty"}), 500
+        # Validate ONLY index.html (most critical file from LLM)
+        index_path = os.path.join(output_dir, "index.html")
+        if not os.path.isfile(index_path) or os.path.getsize(index_path) == 0:
+            logging.error("Generated file index.html missing or empty")
+            return jsonify({"error": "File index.html missing or empty"}), 500
         
         # Copy generated files to project root
         for filename in ["index.html", "README.md"]:
-            shutil.copyfile(os.path.join(output_dir, filename), filename)
+            src = os.path.join(output_dir, filename)
+            if os.path.isfile(src):
+                shutil.copyfile(src, filename)
         
         # Write MIT License
         with open("LICENSE", "w") as f:
@@ -179,5 +184,3 @@ def notify_evaluation(evaluation_url, payload, retries=5):
 if __name__ == '__main__':
     logging.info("Starting Flask application")
     app.run(host='0.0.0.0', port=8080)
-
-
