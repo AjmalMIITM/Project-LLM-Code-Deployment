@@ -8,7 +8,6 @@ import shutil
 import logging
 from generate_html import generate_task_html, generate_task_readme
 
-# Set up logging (creates logs.txt on server only, not in GitHub)
 logging.basicConfig(
     level=logging.INFO,
     format='%(asctime)s %(levelname)s %(message)s',
@@ -24,6 +23,10 @@ SECRET = os.environ.get('SECRET_KEY')
 GITHUB_TOKEN = os.environ.get('GITHUB_TOKEN')
 REPO_NAME = "AjmalMIITM/Project-LLM-Code-Deployment"
 USERCODE = os.environ.get('USERCODE', 'ajmalmiitm')
+
+@app.route('/health', methods=['GET'])
+def health():
+    return jsonify({"status": "ok"}), 200
 
 @app.route('/api-endpoint', methods=['POST'])
 def api_endpoint():
@@ -49,21 +52,27 @@ def api_endpoint():
         resp = jsonify({"usercode": USERCODE})
         resp.status_code = 200
 
-        # 1. Generate HTML and README in ./deploy_dir
         output_dir = "./deploy_dir"
         os.makedirs(output_dir, exist_ok=True)
-        logging.info(f"Generating HTML and README for task: {data['task']}")
+
+        logging.info(f"Generating task files for: {data['task']}")
         generate_task_html(data, output_dir)
         generate_task_readme(data, output_dir)
 
-        # 2. Move generated files to project root (overwrite)
+        # Validate generated files exist and non-empty
+        for filename in ["index.html", "README.md"]:
+            file_path = os.path.join(output_dir, filename)
+            if not os.path.isfile(file_path) or os.path.getsize(file_path) == 0:
+                logging.error(f"Generated file {filename} missing or empty")
+                return jsonify({"error": f"File {filename} missing or empty"}), 500
+        
+        # Copy generated files to project root
         for filename in ["index.html", "README.md"]:
             shutil.copyfile(os.path.join(output_dir, filename), filename)
         
-        # FIXED: Always generate COMPLETE MIT LICENSE in the root
+        # Write MIT License
         with open("LICENSE", "w") as f:
-            f.write("""
-MIT License
+            f.write("""MIT License
 
 Copyright (c) 2025 AjmalMIITM
 
@@ -86,32 +95,37 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 """)
 
-        # 3. Read files from root for push
+        # Read files for GitHub push
         files = {}
         for filename in ["index.html", "README.md", "LICENSE"]:
-            with open(filename, "r") as f:
+            with open(filename, "r", encoding="utf-8") as f:
                 files[filename] = f.read()
 
-        # 4. Push to GitHub
         logging.info(f"Pushing files to GitHub: {list(files.keys())}")
         push_to_github(GITHUB_TOKEN, REPO_NAME, files, f"Build for task {data['task']} round {data['round']}")
 
-        # 5. Notify evaluation API
-        g = Github(GITHUB_TOKEN)
-        commit_sha = g.get_repo(REPO_NAME).get_commits()[0].sha
-        pages_url = f"https://{REPO_NAME.split('/')[0].lower()}.github.io/{REPO_NAME.split('/')[1]}/"
-        notify_payload = {
-            "email": data["email"],
-            "task": data["task"],
-            "round": data["round"],
-            "nonce": data["nonce"],
-            "repo_url": f"https://github.com/{REPO_NAME}",
-            "commit_sha": commit_sha,
-            "pages_url": pages_url
-        }
-        logging.info(f"Sending notification to: {data['evaluation_url']}")
-        notify_evaluation(data["evaluation_url"], notify_payload)
-        
+        # Notify evaluation API with retries
+        from github import GithubException
+        try:
+            g = Github(GITHUB_TOKEN)
+            repo = g.get_repo(REPO_NAME)
+            commit_sha = repo.get_commits()[0].sha
+            pages_url = f"https://{REPO_NAME.split('/')[0].lower()}.github.io/{REPO_NAME.split('/')[1]}/"
+
+            notify_payload = {
+                "email": data["email"],
+                "task": data["task"],
+                "round": data["round"],
+                "nonce": data["nonce"],
+                "repo_url": f"https://github.com/{REPO_NAME}",
+                "commit_sha": commit_sha,
+                "pages_url": pages_url
+            }
+            logging.info(f"Sending notification to: {data['evaluation_url']}")
+            notify_evaluation(data["evaluation_url"], notify_payload)
+        except GithubException as ge:
+            logging.error(f"GitHub Exception: {ge}")
+
         logging.info(f"Successfully processed request for task: {data['task']}")
         return resp
         
@@ -162,8 +176,7 @@ def notify_evaluation(evaluation_url, payload, retries=5):
     print("Failed to notify evaluation API after retries")
     return False
 
+
 if __name__ == '__main__':
     logging.info("Starting Flask application")
     app.run(host='0.0.0.0', port=8080)
-
-
