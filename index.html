@@ -7,72 +7,60 @@
     <style>
         body {
             font-family: Arial, sans-serif;
-            margin: 20px;
-            line-height: 1.6;
-        }
-        .container {
             max-width: 800px;
             margin: 0 auto;
+            padding: 20px;
         }
-        .data-section {
-            margin-bottom: 20px;
-            padding: 15px;
+        .data-container {
             border: 1px solid #ddd;
+            padding: 20px;
             border-radius: 5px;
-        }
-        .filing-item {
-            margin: 10px 0;
-            padding: 10px;
-            background-color: #f5f5f5;
+            margin-top: 20px;
         }
     </style>
 </head>
 <body>
-    <div class="container">
-        <h1>Ameriprise Financial SEC Information</h1>
-        <div class="data-section">
-            <h2>Company Details</h2>
-            <p><strong>CIK:</strong> <span id="cik"></span></p>
-            <p><strong>Company Name:</strong> <span id="companyName"></span></p>
-            <p><strong>Ticker:</strong> <span id="ticker"></span></p>
-        </div>
-        <div class="data-section">
-            <h2>Latest Filings</h2>
-            <div id="filings"></div>
-        </div>
-        <div class="data-section">
-            <h2>Business Address</h2>
-            <div id="address"></div>
-        </div>
+    <h1>Ameriprise Financial SEC Information</h1>
+    <div class="data-container">
+        <h2>Company Details</h2>
+        <div id="company-info"></div>
+        
+        <h2>Latest Filings</h2>
+        <div id="filing-info"></div>
     </div>
 
     <script>
-        fetch('data.json')
-            .then(response => response.json())
-            .then(data => {
-                document.getElementById('cik').textContent = data.cik;
-                document.getElementById('companyName').textContent = data.companyName;
-                document.getElementById('ticker').textContent = data.ticker;
-
-                const filingsDiv = document.getElementById('filings');
-                data.latestFilings.forEach(filing => {
-                    const filingElement = document.createElement('div');
-                    filingElement.className = 'filing-item';
-                    filingElement.innerHTML = `
-                        <p><strong>Form Type:</strong> ${filing.formType}</p>
-                        <p><strong>Filing Date:</strong> ${filing.filingDate}</p>
-                        <p><strong>Accession Number:</strong> ${filing.accessionNumber}</p>
-                    `;
-                    filingsDiv.appendChild(filingElement);
-                });
-
-                const addressDiv = document.getElementById('address');
-                addressDiv.innerHTML = `
-                    <p>${data.businessAddress.street}</p>
-                    <p>${data.businessAddress.city}, ${data.businessAddress.state} ${data.businessAddress.zip}</p>
+        async function loadSecData() {
+            try {
+                const response = await fetch('data.json');
+                const data = await response.json();
+                
+                const companyInfo = document.getElementById('company-info');
+                companyInfo.innerHTML = `
+                    <p><strong>Company Name:</strong> ${data.entityName}</p>
+                    <p><strong>Trading Symbol:</strong> ${data.tradingSymbol}</p>
+                    <p><strong>CIK:</strong> ${data.cik}</p>
+                    <p><strong>SIC Code:</strong> ${data.sic}</p>
                 `;
-            })
-            .catch(error => console.error('Error loading data:', error));
+
+                const filingInfo = document.getElementById('filing-info');
+                filingInfo.innerHTML = `
+                    <h3>Latest 10-K</h3>
+                    <p>Filing Date: ${data.latestFilings.form10K.filingDate}</p>
+                    <p>Report Date: ${data.latestFilings.form10K.reportDate}</p>
+                    <p><a href="${data.latestFilings.form10K.documentUrl}" target="_blank">View Document</a></p>
+
+                    <h3>Latest 10-Q</h3>
+                    <p>Filing Date: ${data.latestFilings.form10Q.filingDate}</p>
+                    <p>Report Date: ${data.latestFilings.form10Q.reportDate}</p>
+                    <p><a href="${data.latestFilings.form10Q.documentUrl}" target="_blank">View Document</a></p>
+                `;
+            } catch (error) {
+                console.error('Error loading SEC data:', error);
+            }
+        }
+
+        document.addEventListener('DOMContentLoaded', loadSecData);
     </script>
 </body>
 </html>
