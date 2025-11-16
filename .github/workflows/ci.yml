@@ -1,59 +1,53 @@
 name: CI Pipeline
-
 on:
   push:
     branches:
       - main
-
 jobs:
   build-and-deploy:
     runs-on: ubuntu-latest
-
     concurrency:
       group: gh-pages-deploy
       cancel-in-progress: true
-
     steps:
     - name: Checkout code
-      uses: actions/checkout@v2
+      uses: actions/checkout@v4  # Update to latest for security/fixes
       with:
         fetch-depth: 0
-
     - name: Set up Python
-      uses: actions/setup-python@v2
+      uses: actions/setup-python@v5  # Latest version
       with:
         python-version: '3.11'
-
     - name: Install dependencies
       run: |
         python -m pip install --upgrade pip
-        pip install ruff pandas openpyxl
-
+        pip install ruff pandas==2.3.0 openpyxl  # Pin pandas to match brief
     - name: Run Python Linter (ruff)
       run: |
-        ruff check . || true
-
+        ruff check . --output-format=full  # Show detailed output in logs
     - name: Execute Python script and generate results
       run: |
         if [ -f execute.py ]; then
-          python execute.py > result.json 2>&1
-          echo "execute.py executed successfully"
+          python execute.py > result.json 2>&1 || echo "execute.py failed: $(cat result.json)"
+          echo "execute.py executed; result.json generated"
         else
-          echo "execute.py not found, creating placeholder result.json"
-          echo '{"status": "success", "message": "Placeholder - execute.py not in repo"}' > result.json
+          echo "execute.py not found, skipping execution"
+          echo '{"error": "execute.py missing"}' > result.json
         fi
-
     - name: Validate result.json (basic check)
       run: |
         if [ -f result.json ]; then
-          echo "result.json exists:"
+          echo "result.json contents:"
           cat result.json
+          # Quick JSON validity check
+          python -c "import json; json.load(open('result.json'))" || echo "Invalid JSON in result.json"
         else
-          echo "result.json not created"
+          echo "result.json not created - failing step"
+          exit 1
         fi
-
     - name: Deploy to GitHub Pages
-      uses: peaceiris/actions-gh-pages@v3
+      uses: peaceiris/actions-gh-pages@v4  # Latest for reliability
       with:
         github_token: ${{ secrets.GITHUB_TOKEN }}
-        publish_dir: .
+        publish_dir: .  # Deploys root, including generated result.json to Pages
+        force_orphan: true  # Clean history for Pages-only deploys
