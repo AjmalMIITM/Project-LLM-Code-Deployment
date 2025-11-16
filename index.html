@@ -1,124 +1,67 @@
-```python
-# fetch_data.py
-import requests
-import json
-
-# Set the User-Agent as per SEC guidance
-headers = {
-    'User-Agent': 'MyApp/1.0 (https://myapp.example.com)'
-}
-
-# Fetch data from the SEC API
-response = requests.get("https://data.sec.gov/api/xbrl/companyconcept/CIK0000820027/dei/EntityCommonStockSharesOutstanding.json", headers=headers)
-data = response.json()
-
-# Extract entity name
-entity_name = data['entityName']
-
-# Filter units for entries with fy > "2020" and numeric val
-filtered_units = [
-    unit for unit in data['units']['shares']
-    if unit['fy'] > "2020" and isinstance(unit['val'], (int, float))
-]
-
-# Determine max and min values
-max_entry = max(filtered_units, key=lambda x: x['val'])
-min_entry = min(filtered_units, key=lambda x: x['val'])
-
-# Prepare the output structure
-output_data = {
-    "entityName": entity_name,
-    "max": {
-        "val": max_entry['val'],
-        "fy": max_entry['fy']
-    },
-    "min": {
-        "val": min_entry['val'],
-        "fy": min_entry['fy']
-    }
-}
-
-# Save to data.json
-with open('data.json', 'w') as f:
-    json.dump(output_data, f, indent=4)
-```
-
-```html
-<!-- index.html -->
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title id="page-title">Ameriprise Financial</title>
+    <title>Ameriprise Financial Share Data</title>
     <style>
-        body { font-family: Arial, sans-serif; }
-        h1 { color: #333; }
-        .max { color: green; }
-        .min { color: red; }
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+            line-height: 1.6;
+        }
+        .data-container {
+            max-width: 600px;
+            margin: 0 auto;
+            padding: 20px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+        }
+        .data-row {
+            margin-bottom: 15px;
+        }
     </style>
 </head>
 <body>
-    <h1 id="share-entity-name">Ameriprise Financial</h1>
-    <div>
-        <div class="max">Max Shares Outstanding: <span id="share-max-value"></span> (FY: <span id="share-max-fy"></span>)</div>
-        <div class="min">Min Shares Outstanding: <span id="share-min-value"></span> (FY: <span id="share-min-fy"></span>)</div>
+    <div class="data-container">
+        <div class="data-row">
+            <strong>Entity Name:</strong> 
+            <span id="share-entity-name"></span>
+        </div>
+        <div class="data-row">
+            <strong>Maximum Shares:</strong> 
+            <span id="share-max-value"></span> 
+            (FY <span id="share-max-fy"></span>)
+        </div>
+        <div class="data-row">
+            <strong>Minimum Shares:</strong> 
+            <span id="share-min-value"></span>
+            (FY <span id="share-min-fy"></span>)
+        </div>
     </div>
+
     <script>
-        async function fetchData(cik) {
-            const response = await fetch(`https://data.sec.gov/api/xbrl/companyconcept/CIK${cik}/dei/EntityCommonStockSharesOutstanding.json`, {
-                headers: {
-                    'User-Agent': 'MyApp/1.0 (https://myapp.example.com)'
-                }
-            });
-            const data = await response.json();
-            document.getElementById('page-title').innerText = data.entityName;
-            document.getElementById('share-entity-name').innerText = data.entityName;
-            document.getElementById('share-max-value').innerText = data.max.val;
-            document.getElementById('share-max-fy').innerText = data.max.fy;
-            document.getElementById('share-min-value').innerText = data.min.val;
-            document.getElementById('share-min-fy').innerText = data.min.fy;
+        async function loadData(cik = '0000820027') {
+            try {
+                const response = await fetch('data.json');
+                const data = await response.json();
+                
+                document.getElementById('share-entity-name').textContent = data.entityName;
+                document.getElementById('share-max-value').textContent = data.maxShares.value.toLocaleString();
+                document.getElementById('share-max-fy').textContent = data.maxShares.fiscalYear;
+                document.getElementById('share-min-value').textContent = data.minShares.value.toLocaleString();
+                document.getElementById('share-min-fy').textContent = data.minShares.fiscalYear;
+            } catch (error) {
+                console.error('Error loading data:', error);
+            }
         }
 
+        // Get CIK from URL parameter if present
         const urlParams = new URLSearchParams(window.location.search);
-        const cik = urlParams.get('CIK') || '0000820027';
-        fetchData(cik);
+        const cik = urlParams.get('CIK');
+        
+        // Load data with specified CIK or default
+        loadData(cik);
     </script>
 </body>
 </html>
-```
-
-```
-# uid.txt
-your-unique-uid-here
-```
-
-```
-# LICENSE
-MIT License
-
-Copyright (c) [year] [fullname]
-
-Permission is hereby granted, free of charge, to any person obtaining a copy
-of this software and associated documentation files (the "Software"), to deal
-in the Software without restriction, including without limitation the rights
-to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-copies of the Software, and to permit persons to whom the Software is
-furnished to do so, subject to the following conditions:
-...
-``` 
-
-```json
-// data.json
-{
-    "entityName": "Ameriprise Financial",
-    "max": {
-        "val": 1000000,
-        "fy": "2021"
-    },
-    "min": {
-        "val": 500000,
-        "fy": "2022"
-    }
-}
-```
