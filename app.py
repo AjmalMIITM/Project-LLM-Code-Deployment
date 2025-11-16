@@ -4,8 +4,8 @@ import os
 import sys
 import requests
 import time
-import shutil
 import logging
+import base64  # Added for base64 decoding
 from generate_html import generate_task_files, generate_task_readme
 import pandas as pd
 from io import BytesIO
@@ -112,7 +112,6 @@ SOFTWARE.
         if not os.path.isfile(index_path) or os.path.getsize(index_path) == 0:
             logging.error("Generated file index.html missing or empty")
             # Log parsed files for debug
-            import generate_html
             # Assuming we can peek into generate_html's last call, but for now, skip detailed
             return jsonify({"error": "File index.html missing or empty"}), 500
         
