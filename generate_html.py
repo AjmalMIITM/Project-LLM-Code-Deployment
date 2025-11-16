@@ -1,89 +1,40 @@
 import requests
 import os
 import re
+import base64
 AIPIPE_TOKEN = os.environ.get("AIPIPE_TOKEN")
 AIPIPE_URL = "https://aipipe.org/openrouter/v1/chat/completions"
 MODEL = "openai/gpt-4o"
+
 def get_code_from_llm(brief, checks, attachments):
     attachment_list = ", ".join(att['name'] for att in attachments) if attachments else "none"
-    prompt = f"""You are an elite software architect, full-stack engineer, and automated code synthesis expert with mastery across 50+ programming languages, frameworks, and paradigms (e.g., OOP, FP, reactive, async, microservices). You excel at decomposing complex specifications into modular, scalable, production-ready artifacts. Your output is always precise, efficient, secure, and optimized for performance, maintainability, and extensibility. You anticipate edge cases, integrate best practices (e.g., SOLID principles, DRY, CI/CD readiness), and ensure cross-platform compatibility.
-
-TASK DECOMPOSITION:
-1. **Ingest & Analyze Brief**: Parse the {{brief}} holistically. Identify core objectives, user intents, constraints (e.g., performance, security, scalability), implicit requirements (e.g., error handling, logging, testing), and dependencies (e.g., APIs, databases, UI/UX flows). Map to architectural patterns (e.g., MVC, event-driven, serverless).
-2. **Scope Artifacts**: Enumerate ALL necessary files/artifacts (e.g., source code, configs, docs, tests). Infer types/extensions from context (e.g., .py for Python, .json for configs, .md for README). Prioritize modularity: break monoliths into micro-modules.
-3. **Leverage Attachments**: Scan {attachment_list} for reusable assets (e.g., schemas, datasets, wireframes). Integrate them verbatim where applicable; transform/augment as needed (e.g., migrate CSV to ORM models). If attachments contain code, refactor for consistency.
-4. **Risk & Validation Assessment**: Proactively identify potential pitfalls (e.g., race conditions, SQL injection, accessibility gaps). Generate mitigations inline (e.g., via comments, guards, or separate validation files).
-5. **Holistic Generation**: Produce a complete, self-contained solution ecosystem. Include:
-   - Core implementation files.
-   - Supporting infrastructure (e.g., Dockerfiles, env configs, build scripts).
-   - Tests (unit/integration/e2e) covering 90%+ edge cases.
-   - Documentation (e.g., API specs in OpenAPI, deployment guides).
-   - Optimization layers (e.g., caching, indexing, profiling hooks).
-
-REQUIREMENTS ENFORCEMENT:
-- **Completeness**: Generate 100% of inferred artifacts; no partials. If ambiguities exist, resolve via minimal viable assumptions documented in a dedicated "assumptions.md" file.
-- **Quality Gates**:
-  - **Syntax & Semantics**: Zero errors; validate via mental simulation (e.g., trace execution paths).
-  - **Standards Compliance**: Adhere to idioms (e.g., PEP8 for Python, ESLint for JS). Use type hints/annotations everywhere feasible.
-  - **Security**: Bake in OWASP top-10 defenses (e.g., input sanitization, JWT auth, rate limiting).
-  - **Performance**: Optimize for O(1) where possible; include Big-O analysis in comments for non-trivial algos.
-  - **Accessibility & Inclusivity**: Ensure WCAG compliance for UIs; i18n readiness.
-  - **Scalability**: Design for horizontal scaling (e.g., stateless services, sharding).
-- **Customization**: If {{brief}} specifies variants (e.g., web vs. CLI), generate all forks in subdirectories.
-- **Extensibility**: Use dependency injection, interfaces/abstracts for future-proofing.
-
-VALIDATION CHECKS:
-{{chr(10).join(f'- {{check}}' for check in checks) if checks else "_No explicit checks; auto-generate suite for functional correctness, security scans, and perf benchmarks._"}}
-
-ITERATIVE REFINEMENT (Internal Loop - Do Not Output):
-- Simulate dry-run: Mentally execute generated code against sample inputs from {{brief}}.
-- Self-audit: Cross-check against REQUIREMENTS; iterate until flawless.
-- Edge Expansion: For each file, enumerate 3-5 test vectors (happy path, failures, extremes).
-
-OUTPUT PROTOCOL:
-Emit ONLY the artifact corpus in this rigid, parseable format. No prose, headers, or metadata outside files. Structure as a virtual filesystem:
-
---- filesystem_structure.txt ---
-[Tree-like outline of all files/directories, e.g.:
-project/
-├── src/
-│   ├── main.py
-│   └── utils/
-│       └── helpers.py
-├── tests/
-│   └── test_main.py
-├── docs/
-│   └── README.md
-├── config/
-│   └── .env.example
-└── Dockerfile
-]
+    # Simplified prompt to avoid over-engineering; focus on exact files from brief
+    prompt = f"""You are an expert software engineer and code generator.
+TASK:
+{brief}
+REQUIREMENTS:
+- Carefully analyze the brief and determine all required files (names and file types). Generate ONLY the files explicitly mentioned or implied in the brief, at the root level unless specified (e.g., .github/workflows/ci.yml).
+- For attachments: Use filenames {attachment_list}. If needed, reference their content logically (e.g., for data.xlsx, assume conversion to data.csv; for execute.py, fix errors like typos).
+- Generate ALL required files exactly as specified in the task, including any fixes (e.g., typo in execute.py: change 'revenew' to 'revenue').
+- Pass all checks listed below and generate files with correct structure and content.
+- For web tasks: Ensure index.html is valid HTML/JS, fetches data if needed (e.g., SEC API with User-Agent).
+- For CI tasks: Generate .github/workflows/ci.yml with ruff, python execute.py > result.json, and gh-pages deploy.
+CHECKS:
+{chr(10).join(f'- {check}' for check in checks) if checks else "_No checks provided_"}
+OUTPUT FORMAT:
+For each file, output the full contents in this exact format, with no explanation or extra text:
+--- filename.ext ---
+[file content]
 --- end ---
+Important:
+- Preserve file formats exactly (JSON, YAML, Markdown, CSV, SVG, Python, HTML).
+- Ensure JSON files are valid and well-formatted.
+- Ensure code files compile and run without syntax errors (e.g., fix typos in attachments).
+- Use placeholders only if data is missing, but still produce the file. For attachments like uid.txt, output as-is if possible.
+- Do not generate extra files like filesystem_structure.txt or validation_summary.md.
+- For binary/text: Output verbatim.
+- Do not deviate from the output format or filenames."""
 
-Then, for EACH file in depth-first order (root to leaves), output immutably:
-
---- [relative/path/]filename.ext ---
-[Full, verbatim content: code, text, binary-safe if applicable (e.g., base64 for images). Preserve whitespace, encodings (UTF-8 default), and formats (e.g., minified JS optional but noted).]
---- end ---
-
-POST-GENERATION INTEGRITY:
-- **Final Seal**: Conclude with a single, non-formatted block:
---- validation_summary.md ---
-| Artifact | Status | Coverage | Notes |
-|----------|--------|----------|-------|
-| [file1] | PASS | 95% | [brief insight] |
-| ... | ... | ... | ... |
-[Overall: Solution readiness score (0-100), key assumptions, next steps.]
---- end ---
-
-CRITICAL CONSTRAINTS:
-- **Fidelity**: Mirror {{brief}} verbatim where specified; innovate only in gaps.
-- **Idempotency**: Output must be executable "as-is" in target env (infer from {{brief}}; default: Node 18+, Python 3.11+).
-- **Conciseness**: Eliminate bloat; favor elegance over verbosity.
-- **No Escapes**: Raw content only—no markdown fencing inside files.
-- **Error Handling**: If impossible (e.g., missing deps), flag in validation_summary.md and provide workaround scaffold.
-
-This protocol transforms any {{brief}} into a deployable powerhouse. Execute now."""
     headers = {
         "Authorization": f"Bearer {AIPIPE_TOKEN}",
         "Content-Type": "application/json",
@@ -94,13 +45,16 @@ This protocol transforms any {{brief}} into a deployable powerhouse. Execute now
             {"role": "system", "content": "You are a helpful AI code generator."},
             {"role": "user", "content": prompt}
         ],
-        "max_tokens": 10000
+        "max_tokens": 20000,
+        "temperature": 0.1  # Lower for consistency
     }
     try:
-        resp = requests.post(AIPIPE_URL, headers=headers, json=payload, timeout=90)
+        resp = requests.post(AIPIPE_URL, headers=headers, json=payload, timeout=120)
         result = resp.json()
         if "choices" in result and len(result["choices"]) > 0:
-            return result['choices'][0]['message']['content']
+            llm_out = result['choices'][0]['message']['content']
+            logging.info(f"LLM output preview: {llm_out[:500]}...")  # Add logging
+            return llm_out
         elif "error" in result:
             err = result["error"]
             msg = err["message"] if isinstance(err, dict) and "message" in err else str(err)
@@ -109,20 +63,24 @@ This protocol transforms any {{brief}} into a deployable powerhouse. Execute now
             return f"<h2 style='color:red;'>Unexpected LLM API response:<br>{result}</h2>"
     except Exception as e:
         return f"<h2 style='color:red;'>Server exception: {e}</h2>"
+
 def parse_llm_output(output):
     """
     Parse output to extract files using:
     --- filename.ext ---
     [file contents]
     --- end ---
+    Handles paths like .github/workflows/ci.yml
     """
     pattern = r"--- ([^\n]+?) ---\n([\s\S]+?)(?=(?:--- [^\n]+? ---)|$)"
     files = {}
-    for match in re.finditer(pattern, output):
+    for match in re.finditer(pattern, output, re.DOTALL):
         filename = match.group(1).strip()
-        content = match.group(2).strip()
+        content = match.group(2).rstrip()  # Avoid trailing whitespace issues
         files[filename] = content
+    logging.info(f"Parsed files: {list(files.keys())}")  # Debug log
     return files
+
 def generate_task_files(task_json, output_dir="."):
     llm_output = get_code_from_llm(
         task_json.get("brief"),
@@ -130,6 +88,7 @@ def generate_task_files(task_json, output_dir="."):
         task_json.get("attachments", [])
     )
     if llm_output.startswith("<h2"):
+        logging.error("LLM API Error: " + llm_output)
         print("LLM API Error:", llm_output)
         return
     files_map = parse_llm_output(llm_output)
@@ -139,16 +98,19 @@ def generate_task_files(task_json, output_dir="."):
         os.makedirs(os.path.dirname(file_path), exist_ok=True)
         with open(file_path, "w", encoding="utf-8") as f:
             f.write(content)
-    # Save attachments as is
+    # Save attachments as is (already done in app.py pre-process)
+    # But for completeness, if not processed
     for att in task_json.get("attachments", []):
         att_path = os.path.join(output_dir, att['name'])
-        try:
-            att_resp = requests.get(att['url'], timeout=30)
-            att_resp.raise_for_status()
-            with open(att_path, 'wb') as fp:
-                fp.write(att_resp.content)
-        except Exception as e:
-            print(f"Failed to download attachment {att['name']}: {e}")
+        if not os.path.exists(att_path):  # If not pre-downloaded
+            try:
+                att_resp = requests.get(att['url'], timeout=30)
+                att_resp.raise_for_status()
+                with open(att_path, 'wb') as fp:
+                    fp.write(att_resp.content)
+            except Exception as e:
+                logging.error(f"Failed to download attachment {att['name']}: {e}")
+
 def generate_task_readme(task_json, output_dir="."):
     task = task_json.get('task', 'Task')
     round_num = task_json.get('round', '')
@@ -192,4 +154,3 @@ _Made with ❤️ for IITM TDS Project 1 — auto-generated by LLM Code Deployme
 """
     with open(os.path.join(output_dir, "README.md"), "w", encoding="utf-8") as f:
         f.write(readme_content)
-
