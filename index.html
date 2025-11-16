@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Ameriprise Financial Share Data</title>
+    <title>SEC Share Data</title>
     <style>
         body {
             font-family: Arial, sans-serif;
@@ -13,35 +13,40 @@
         .data-container {
             max-width: 600px;
             margin: 0 auto;
-            padding: 20px;
-            border: 1px solid #ccc;
-            border-radius: 5px;
         }
-        .data-row {
-            margin-bottom: 15px;
+        .data-item {
+            margin-bottom: 20px;
+        }
+        .label {
+            font-weight: bold;
         }
     </style>
 </head>
 <body>
     <div class="data-container">
-        <div class="data-row">
-            <strong>Entity Name:</strong> 
+        <div class="data-item">
+            <span class="label">Entity Name:</span>
             <span id="share-entity-name"></span>
         </div>
-        <div class="data-row">
-            <strong>Maximum Shares:</strong> 
-            <span id="share-max-value"></span> 
-            (FY <span id="share-max-fy"></span>)
+        <div class="data-item">
+            <span class="label">Maximum Shares:</span>
+            <span id="share-max-value"></span>
+            <span>in FY</span>
+            <span id="share-max-fy"></span>
         </div>
-        <div class="data-row">
-            <strong>Minimum Shares:</strong> 
+        <div class="data-item">
+            <span class="label">Minimum Shares:</span>
             <span id="share-min-value"></span>
-            (FY <span id="share-min-fy"></span>)
+            <span>in FY</span>
+            <span id="share-min-fy"></span>
         </div>
     </div>
 
     <script>
-        async function loadData(cik = '0000820027') {
+        async function loadData() {
+            const urlParams = new URLSearchParams(window.location.search);
+            const cik = urlParams.get('CIK') || '0000820027';
+            
             try {
                 const response = await fetch('data.json');
                 const data = await response.json();
@@ -56,12 +61,7 @@
             }
         }
 
-        // Get CIK from URL parameter if present
-        const urlParams = new URLSearchParams(window.location.search);
-        const cik = urlParams.get('CIK');
-        
-        // Load data with specified CIK or default
-        loadData(cik);
+        window.onload = loadData;
     </script>
 </body>
 </html>
