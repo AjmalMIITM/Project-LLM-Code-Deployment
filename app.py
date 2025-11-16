@@ -6,7 +6,7 @@ import requests
 import time
 import shutil
 import logging
-from generate_html import generate_task_html, generate_task_readme
+from generate_html import generate_task_files, generate_task_readme
 
 logging.basicConfig(
     level=logging.INFO,
@@ -56,8 +56,7 @@ def api_endpoint():
         os.makedirs(output_dir, exist_ok=True)
 
         logging.info(f"Generating task files for: {data['task']}")
-        generate_task_html(data, output_dir)
-        generate_task_readme(data, output_dir)
+        generate_task_files(data, output_dir)
 
         # Validate generated files exist and non-empty
         for filename in ["index.html", "README.md"]:
@@ -180,3 +179,4 @@ def notify_evaluation(evaluation_url, payload, retries=5):
 if __name__ == '__main__':
     logging.info("Starting Flask application")
     app.run(host='0.0.0.0', port=8080)
+
