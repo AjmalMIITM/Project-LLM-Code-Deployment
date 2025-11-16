@@ -1,6 +1,7 @@
 import requests
 import os
 import re
+import logging  # Added for logging
 import base64
 AIPIPE_TOKEN = os.environ.get("AIPIPE_TOKEN")
 AIPIPE_URL = "https://aipipe.org/openrouter/v1/chat/completions"
