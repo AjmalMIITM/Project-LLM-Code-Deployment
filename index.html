@@ -3,65 +3,76 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>SEC Share Data</title>
+    <title>Ameriprise Financial SEC Data</title>
     <style>
         body {
             font-family: Arial, sans-serif;
             margin: 20px;
             line-height: 1.6;
         }
-        .data-container {
-            max-width: 600px;
+        .container {
+            max-width: 800px;
             margin: 0 auto;
         }
-        .data-item {
+        .data-section {
             margin-bottom: 20px;
+            padding: 15px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
         }
-        .label {
-            font-weight: bold;
+        .filing-item {
+            margin: 10px 0;
+            padding: 10px;
+            background-color: #f5f5f5;
         }
     </style>
 </head>
 <body>
-    <div class="data-container">
-        <div class="data-item">
-            <span class="label">Entity Name:</span>
-            <span id="share-entity-name"></span>
+    <div class="container">
+        <h1>Ameriprise Financial SEC Information</h1>
+        <div class="data-section">
+            <h2>Company Details</h2>
+            <p><strong>CIK:</strong> <span id="cik"></span></p>
+            <p><strong>Company Name:</strong> <span id="companyName"></span></p>
+            <p><strong>Ticker:</strong> <span id="ticker"></span></p>
         </div>
-        <div class="data-item">
-            <span class="label">Maximum Shares:</span>
-            <span id="share-max-value"></span>
-            <span>in FY</span>
-            <span id="share-max-fy"></span>
+        <div class="data-section">
+            <h2>Latest Filings</h2>
+            <div id="filings"></div>
         </div>
-        <div class="data-item">
-            <span class="label">Minimum Shares:</span>
-            <span id="share-min-value"></span>
-            <span>in FY</span>
-            <span id="share-min-fy"></span>
+        <div class="data-section">
+            <h2>Business Address</h2>
+            <div id="address"></div>
         </div>
     </div>
 
     <script>
-        async function loadData() {
-            const urlParams = new URLSearchParams(window.location.search);
-            const cik = urlParams.get('CIK') || '0000820027';
-            
-            try {
-                const response = await fetch('data.json');
-                const data = await response.json();
-                
-                document.getElementById('share-entity-name').textContent = data.entityName;
-                document.getElementById('share-max-value').textContent = data.maxShares.value.toLocaleString();
-                document.getElementById('share-max-fy').textContent = data.maxShares.fiscalYear;
-                document.getElementById('share-min-value').textContent = data.minShares.value.toLocaleString();
-                document.getElementById('share-min-fy').textContent = data.minShares.fiscalYear;
-            } catch (error) {
-                console.error('Error loading data:', error);
-            }
-        }
+        fetch('data.json')
+            .then(response => response.json())
+            .then(data => {
+                document.getElementById('cik').textContent = data.cik;
+                document.getElementById('companyName').textContent = data.companyName;
+                document.getElementById('ticker').textContent = data.ticker;
 
-        window.onload = loadData;
+                const filingsDiv = document.getElementById('filings');
+                data.latestFilings.forEach(filing => {
+                    const filingElement = document.createElement('div');
+                    filingElement.className = 'filing-item';
+                    filingElement.innerHTML = `
+                        <p><strong>Form Type:</strong> ${filing.formType}</p>
+                        <p><strong>Filing Date:</strong> ${filing.filingDate}</p>
+                        <p><strong>Accession Number:</strong> ${filing.accessionNumber}</p>
+                    `;
+                    filingsDiv.appendChild(filingElement);
+                });
+
+                const addressDiv = document.getElementById('address');
+                addressDiv.innerHTML = `
+                    <p>${data.businessAddress.street}</p>
+                    <p>${data.businessAddress.city}, ${data.businessAddress.state} ${data.businessAddress.zip}</p>
+                `;
+            })
+            .catch(error => console.error('Error loading data:', error));
     </script>
 </body>
 </html>
