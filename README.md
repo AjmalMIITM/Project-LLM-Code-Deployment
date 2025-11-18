@@ -2,10 +2,10 @@
 [![Deploy Status](https://img.shields.io/badge/deploy-on--render-brightgreen)](https://project-llm-code-deployment.onrender.com/api-endpoint)
 ## Project Overview
 This repo is an **auto-generated app or script** for a specific LLM-assisted TDS Project 1 task.
-- **Current Task:** `JsonTest`
+- **Current Task:** `Calculator`
 - **Round:** `1`
 - **App Brief:**
-  > Generate data.json with sample info.
+  > Create a simple calculator with index.html.
 ---
 ## 📋 Features (This Task)
 - LLM-generated, ready-to-use code for the current task brief
@@ -15,12 +15,12 @@ This repo is an **auto-generated app or script** for a specific LLM-assisted TDS
 ## ⚡ Task Metadata
 | Field | Value |
 |---------------|-----------------------------|
-| Task | `JsonTest` |
+| Task | `Calculator` |
 | Round | `1` |
 | Evaluation URL| `https://tds-llm-code-deploy.s-anand.net/evaluate` |
 | Attachments | — |
 ### ✅ Auto-Evaluation Checks
-- [ ] data.json exists
+- [ ] index.html exists
 ---
 ## 📜 API Info
 - API endpoint for future POSTs:
