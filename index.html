@@ -3,94 +3,53 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Simple Calculator</title>
+    <title>Weather Display</title>
     <style>
         body {
             font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
             display: flex;
             justify-content: center;
             align-items: center;
             height: 100vh;
             background-color: #f0f0f0;
         }
-        .calculator {
+        #weather {
             background-color: #fff;
             padding: 20px;
             border-radius: 8px;
             box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
-        }
-        .calculator input {
-            width: 100%;
-            padding: 10px;
-            margin-bottom: 10px;
-            font-size: 18px;
-            border: 1px solid #ccc;
-            border-radius: 4px;
-        }
-        .calculator button {
-            width: 48%;
-            padding: 10px;
-            font-size: 18px;
-            margin: 1%;
-            border: none;
-            border-radius: 4px;
-            cursor: pointer;
-            background-color: #007bff;
-            color: #fff;
-        }
-        .calculator button:hover {
-            background-color: #0056b3;
+            text-align: center;
         }
     </style>
 </head>
 <body>
-
-<div class="calculator">
-    <input type="text" id="display" disabled>
-    <div>
-        <button onclick="clearDisplay()">C</button>
-        <button onclick="appendToDisplay('1')">1</button>
-        <button onclick="appendToDisplay('2')">2</button>
-        <button onclick="appendToDisplay('3')">3</button>
+    <div id="weather">
+        <h1>Weather Display</h1>
+        <p id="location">Loading...</p>
+        <p id="temperature"></p>
+        <p id="description"></p>
     </div>
-    <div>
-        <button onclick="appendToDisplay('4')">4</button>
-        <button onclick="appendToDisplay('5')">5</button>
-        <button onclick="appendToDisplay('6')">6</button>
-        <button onclick="appendToDisplay('+')">+</button>
-    </div>
-    <div>
-        <button onclick="appendToDisplay('7')">7</button>
-        <button onclick="appendToDisplay('8')">8</button>
-        <button onclick="appendToDisplay('9')">9</button>
-        <button onclick="appendToDisplay('-')">-</button>
-    </div>
-    <div>
-        <button onclick="appendToDisplay('0')">0</button>
-        <button onclick="appendToDisplay('*')">*</button>
-        <button onclick="appendToDisplay('/')">/</button>
-        <button onclick="calculateResult()">=</button>
-    </div>
-</div>
 
-<script>
-    function appendToDisplay(value) {
-        document.getElementById('display').value += value;
-    }
-
-    function clearDisplay() {
-        document.getElementById('display').value = '';
-    }
-
-    function calculateResult() {
-        try {
-            const result = eval(document.getElementById('display').value);
-            document.getElementById('display').value = result;
-        } catch (error) {
-            alert('Invalid expression');
+    <script>
+        async function fetchWeather() {
+            try {
+                const response = await fetch('https://api.openweathermap.org/data/2.5/weather?q=London&appid=YOUR_API_KEY');
+                if (!response.ok) {
+                    throw new Error('Network response was not ok');
+                }
+                const data = await response.json();
+                document.getElementById('location').textContent = `Location: ${data.name}`;
+                document.getElementById('temperature').textContent = `Temperature: ${(data.main.temp - 273.15).toFixed(2)} °C`;
+                document.getElementById('description').textContent = `Weather: ${data.weather[0].description}`;
+            } catch (error) {
+                document.getElementById('location').textContent = 'Error fetching weather data';
+                console.error('There was a problem with the fetch operation:', error);
+            }
         }
-    }
-</script>
 
+        fetchWeather();
+    </script>
 </body>
 </html>
