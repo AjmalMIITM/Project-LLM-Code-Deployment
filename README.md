@@ -5,7 +5,7 @@ This repo is an **auto-generated app or script** for a specific LLM-assisted TDS
 - **Current Task:** `Calculator`
 - **Round:** `1`
 - **App Brief:**
-  > Create a functional calculator.
+  > Create a professional calculator with display screen showing input/result, grid layout with number buttons 0-9, operators +,-,*,/, equals button, clear button, modern CSS styling with proper spacing and colors.
 ---
 ## 📋 Features (This Task)
 - LLM-generated, ready-to-use code for the current task brief
@@ -21,6 +21,7 @@ This repo is an **auto-generated app or script** for a specific LLM-assisted TDS
 | Attachments | — |
 ### ✅ Auto-Evaluation Checks
 - [ ] index.html exists
+- [ ] calculator functional
 ---
 ## 📜 API Info
 - API endpoint for future POSTs:
