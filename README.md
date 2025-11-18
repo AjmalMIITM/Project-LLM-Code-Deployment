@@ -2,10 +2,10 @@
 [![Deploy Status](https://img.shields.io/badge/deploy-on--render-brightgreen)](https://project-llm-code-deployment.onrender.com/api-endpoint)
 ## Project Overview
 This repo is an **auto-generated app or script** for a specific LLM-assisted TDS Project 1 task.
-- **Current Task:** `SimpleCalculator`
+- **Current Task:** `HelloWorld`
 - **Round:** `1`
 - **App Brief:**
-  > Create a simple calculator webpage with buttons for digits 0-9, operators +, -, *, /, and a display area. Include index.html and script.js with basic functionality.
+  > Create index.html with Hello World heading.
 ---
 ## 📋 Features (This Task)
 - LLM-generated, ready-to-use code for the current task brief
@@ -15,13 +15,12 @@ This repo is an **auto-generated app or script** for a specific LLM-assisted TDS
 ## ⚡ Task Metadata
 | Field | Value |
 |---------------|-----------------------------|
-| Task | `SimpleCalculator` |
+| Task | `HelloWorld` |
 | Round | `1` |
 | Evaluation URL| `https://tds-llm-code-deploy.s-anand.net/evaluate` |
 | Attachments | — |
 ### ✅ Auto-Evaluation Checks
 - [ ] index.html exists
-- [ ] script.js exists
 ---
 ## 📜 API Info
 - API endpoint for future POSTs:
