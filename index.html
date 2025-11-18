@@ -3,53 +3,140 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Weather Display</title>
+    <title>Calculator</title>
     <style>
         body {
             font-family: Arial, sans-serif;
-            margin: 0;
-            padding: 0;
             display: flex;
             justify-content: center;
             align-items: center;
             height: 100vh;
             background-color: #f0f0f0;
         }
-        #weather {
+        #calculator {
             background-color: #fff;
             padding: 20px;
-            border-radius: 8px;
+            border-radius: 10px;
             box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
-            text-align: center;
+        }
+        #display {
+            width: 100%;
+            height: 40px;
+            margin-bottom: 10px;
+            text-align: right;
+            padding-right: 10px;
+            font-size: 1.5em;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+        }
+        .button {
+            width: 60px;
+            height: 60px;
+            margin: 5px;
+            font-size: 1.2em;
+            cursor: pointer;
+            border: none;
+            border-radius: 5px;
+            background-color: #e0e0e0;
+            transition: background-color 0.2s;
+        }
+        .button:hover {
+            background-color: #d0d0d0;
+        }
+        .button:active {
+            background-color: #c0c0c0;
         }
     </style>
 </head>
 <body>
-    <div id="weather">
-        <h1>Weather Display</h1>
-        <p id="location">Loading...</p>
-        <p id="temperature"></p>
-        <p id="description"></p>
+    <div id="calculator">
+        <input type="text" id="display" disabled>
+        <div>
+            <button class="button" onclick="appendNumber('7')">7</button>
+            <button class="button" onclick="appendNumber('8')">8</button>
+            <button class="button" onclick="appendNumber('9')">9</button>
+            <button class="button" onclick="setOperation('/')">/</button>
+        </div>
+        <div>
+            <button class="button" onclick="appendNumber('4')">4</button>
+            <button class="button" onclick="appendNumber('5')">5</button>
+            <button class="button" onclick="appendNumber('6')">6</button>
+            <button class="button" onclick="setOperation('*')">*</button>
+        </div>
+        <div>
+            <button class="button" onclick="appendNumber('1')">1</button>
+            <button class="button" onclick="appendNumber('2')">2</button>
+            <button class="button" onclick="appendNumber('3')">3</button>
+            <button class="button" onclick="setOperation('-')">-</button>
+        </div>
+        <div>
+            <button class="button" onclick="appendNumber('0')">0</button>
+            <button class="button" onclick="appendNumber('.')">.</button>
+            <button class="button" onclick="calculate()">=</button>
+            <button class="button" onclick="setOperation('+')">+</button>
+        </div>
+        <div>
+            <button class="button" onclick="clearDisplay()">C</button>
+        </div>
     </div>
 
     <script>
-        async function fetchWeather() {
-            try {
-                const response = await fetch('https://api.openweathermap.org/data/2.5/weather?q=London&appid=YOUR_API_KEY');
-                if (!response.ok) {
-                    throw new Error('Network response was not ok');
-                }
-                const data = await response.json();
-                document.getElementById('location').textContent = `Location: ${data.name}`;
-                document.getElementById('temperature').textContent = `Temperature: ${(data.main.temp - 273.15).toFixed(2)} °C`;
-                document.getElementById('description').textContent = `Weather: ${data.weather[0].description}`;
-            } catch (error) {
-                document.getElementById('location').textContent = 'Error fetching weather data';
-                console.error('There was a problem with the fetch operation:', error);
-            }
+        let currentInput = '';
+        let currentOperation = null;
+        let firstOperand = null;
+
+        function appendNumber(number) {
+            currentInput += number;
+            updateDisplay();
         }
 
-        fetchWeather();
+        function setOperation(operation) {
+            if (currentInput === '') return;
+            if (firstOperand === null) {
+                firstOperand = parseFloat(currentInput);
+            } else if (currentOperation) {
+                calculate();
+            }
+            currentOperation = operation;
+            currentInput = '';
+        }
+
+        function calculate() {
+            if (currentOperation === null || currentInput === '') return;
+            const secondOperand = parseFloat(currentInput);
+            let result;
+            switch (currentOperation) {
+                case '+':
+                    result = firstOperand + secondOperand;
+                    break;
+                case '-':
+                    result = firstOperand - secondOperand;
+                    break;
+                case '*':
+                    result = firstOperand * secondOperand;
+                    break;
+                case '/':
+                    result = firstOperand / secondOperand;
+                    break;
+                default:
+                    return;
+            }
+            currentInput = result.toString();
+            currentOperation = null;
+            firstOperand = null;
+            updateDisplay();
+        }
+
+        function clearDisplay() {
+            currentInput = '';
+            currentOperation = null;
+            firstOperand = null;
+            updateDisplay();
+        }
+
+        function updateDisplay() {
+            document.getElementById('display').value = currentInput;
+        }
     </script>
 </body>
 </html>
